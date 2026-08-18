@@ -284,33 +284,30 @@
     let isFetching = false;
     let routeStopMap = null;
 
-    // 【全新升級：全網域自動尋址與途經路線探索引擎】
+    // 【全網域自動尋址與途經路線探索引擎】
     async function buildIrStopMap() {
-      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V4");
+      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V5");
       if (cached) {
         const map = JSON.parse(cached);
-        if (Object.keys(map).length > 5) return map; // 確認快取正常
+        if (Object.keys(map).length > 5) return map; 
       }
 
       const msgDiv = document.getElementById("loadingMsg");
       if (msgDiv) msgDiv.innerHTML = "系統首次初始化：正在全網域自動搜尋途經『藍灣半島』之所有路線 (約需 5-15 秒)...<br>Auto-discovering routes from API...";
 
       const map = {};
-      const irStopIds = new Set(); // 記錄藍灣半島總站的所有真實月台 Stop ID
+      const irStopIds = new Set(); 
 
       try {
-        // 1. 獲取全城巴所有路線資料
         const routeRes = await fetch(`${API_BASE}/route/CTB`);
         const routeJson = await routeRes.json();
         const routesData = routeJson.data || [];
         const allRoutes = routesData.map(r => r.route);
 
-        // 2. 篩選出明確以「藍灣半島」為起訖點的路線 (用來定位確切的站點 ID)
         const irExplicitRoutes = routesData
           .filter(r => r.orig_tc.includes("藍灣") || r.dest_tc.includes("藍灣"))
           .map(r => r.route);
 
-        // 3. 找出藍灣半島總站的確切 Stop IDs (掃描起訖路線的頭尾站點)
         for (let route of irExplicitRoutes) {
           let found = false;
           for (let dir of ["outbound", "inbound"]) {
@@ -321,20 +318,17 @@
               const rsJson = await rsRes.json();
               const stops = rsJson.data || [];
 
-              // 只檢查頭尾幾個站點
               const indices = [0, 1, 2, stops.length - 1, stops.length - 2, stops.length - 3];
               for (let i of indices) {
                 if (!stops[i]) continue;
                 let sid = stops[i].stop;
                 
-                // 若已在名單內，直接綁定並跳出
                 if (irStopIds.has(sid)) {
                   map[route] = sid;
                   found = true;
                   break;
                 }
                 
-                // 否則查詢該 Stop ID 的中文名稱
                 const sRes = await fetch(`${API_BASE}/stop/${sid}`);
                 const sJson = await sRes.json();
                 const sName = sJson.data?.name_tc || "";
@@ -349,9 +343,8 @@
           }
         }
 
-        // 4. 全網域掃描：檢查其餘「所有路線」是否有途經這些 Stop IDs
         const remainingRoutes = allRoutes.filter(r => !map[r]);
-        const CHUNK_SIZE = 15; // 批次請求大小
+        const CHUNK_SIZE = 15; 
         for (let i = 0; i < remainingRoutes.length; i += CHUNK_SIZE) {
           if (msgDiv) msgDiv.innerHTML = `深度掃描中... 已確認月台數: ${irStopIds.size}<br>正在比對其他潛在途經路線 (${i}/${remainingRoutes.length})...`;
           const chunk = remainingRoutes.slice(i, i + CHUNK_SIZE);
@@ -363,7 +356,6 @@
                 if (!rsRes.ok) continue;
                 const rsJson = await rsRes.json();
                 const stops = rsJson.data || [];
-                // 如果該路線任何一個站點的 ID 屬於藍灣半島月台，則納入監控名單
                 for (let s of stops) {
                   if (irStopIds.has(s.stop)) {
                     map[route] = s.stop;
@@ -375,16 +367,14 @@
           }));
         }
 
-        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V4", JSON.stringify(map));
+        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V5", JSON.stringify(map));
         return map;
       } catch (err) {
         console.error("尋址引擎異常:", err);
-        // Fallback 防呆機制
         return { "8P": "001147", "788": "001147", "118": "001147" }; 
       }
     }
 
-    // 核心資料更新
     async function fetchLiveIrETAs() {
       if (isFetching) return;
       isFetching = true;
@@ -416,7 +406,6 @@
                 const destZhRaw = (item.dest_tc || "").trim();
                 const destEnRaw = (item.dest_en || "").trim();
 
-                // 核心規則：嚴格過濾目的地為「藍灣半島」的方向班次，其餘開出/途經皆顯示
                 const isInbound = destZhRaw.includes("藍灣") || destEnRaw.toUpperCase().includes("ISLAND RESORT");
                 if (isInbound) continue;
 
@@ -425,11 +414,19 @@
                 const diffMins = Math.ceil(diffMs / 60000);
 
                 if (diffMins >= 0) {
+                  // --- 核心修正：GPS 圖示邏輯對齊官方 App ---
+                  // 移除不可靠的 seq > 1 限制。
+                  // 只要該班次的備註(rmk)為空，或者沒有寫「預定/原定」，即代表官方系統已有實時 GPS 訊號 (巴士已在路上行駛)
+                  const rmk = (item.rmk_tc || "").trim();
+                  const hasGpsIcon = rmk === "" || (!rmk.includes("預定") && !rmk.includes("原定"));
+                  // ------------------------------------------
+
                   if (!earliest || diffMins < earliest.mins) {
                     earliest = {
                       route: route,
                       isFlyer: route.startsWith("A") || route.startsWith("NA"),
                       mins: diffMins,
+                      hasGpsIcon: hasGpsIcon,
                       destZh: destZhRaw.replace(/^往\s*/, "") || "市區",
                       destEn: destEnRaw.replace(/^to\s*/i, "") || "Urban Area"
                     };
@@ -440,7 +437,7 @@
             }
           } catch (e) {}
 
-          await new Promise(r => setTimeout(r, 60)); // 防止超出 API 請求頻率限制
+          await new Promise(r => setTimeout(r, 60));
         }
 
         activeDepartures = results.sort((a, b) => a.mins - b.mins);
@@ -470,15 +467,12 @@
         const row = document.createElement("div");
         row.className = "route-row";
 
-        // Cityflyer Logo
         const badgeHtml = item.isFlyer 
           ? `<img src="${CITYFLYER_LOGO_SRC}" class="cityflyer-logo-img" alt="Cityflyer" onerror="this.outerHTML='<div class=\\'cityflyer-badge\\'><span class=\\'cf-en\\'>Cityflyer</span><span class=\\'cf-zh\\'>城巴機場快線</span></div>'">` 
           : ``;
 
-        const isELine = item.route.startsWith("E");
-        const showGpsIcon = isELine && (item.mins <= 3);
-
-        const gpsHtml = showGpsIcon 
+        // 應用全新的 GPS 圖示判定
+        const gpsHtml = item.hasGpsIcon 
           ? `<img src="${GPS_LOGO_SRC}" class="gps-top-left-icon" alt="GPS">` 
           : ``;
 
@@ -516,12 +510,11 @@
     function clearCacheAndReload(e) {
       e.stopPropagation();
       if(confirm("即將清除站位快取並重新掃描全城巴路線，確定嗎？")) {
-        localStorage.removeItem("CTB_IR_DYNAMIC_ROUTES_V4");
+        localStorage.removeItem("CTB_IR_DYNAMIC_ROUTES_V5");
         location.reload();
       }
     }
 
-    // 每 10 秒翻頁
     setInterval(() => {
       if (activeDepartures.length > PAGE_SIZE) {
         currentPage++;
@@ -529,10 +522,8 @@
       }
     }, 10000);
 
-    // 每 15 秒更新一次
     setInterval(fetchLiveIrETAs, 15000);
 
-    // 初始載入
     fetchLiveIrETAs();
   </script>
 </body>
