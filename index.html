@@ -286,8 +286,7 @@
 
     // 【全網域自動尋址與途經路線探索引擎】
     async function buildIrStopMap() {
-      // 升級快取版本至 V6 以強制重新套用新邏輯
-      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V6");
+      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V7");
       if (cached) {
         const map = JSON.parse(cached);
         if (Object.keys(map).length > 5) return map; 
@@ -368,7 +367,7 @@
           }));
         }
 
-        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V6", JSON.stringify(map));
+        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V7", JSON.stringify(map));
         return map;
       } catch (err) {
         console.error("尋址引擎異常:", err);
@@ -415,15 +414,10 @@
                 const diffMins = Math.ceil(diffMs / 60000);
 
                 if (diffMins >= 0) {
-                  // --- 核心修正：GPS 圖示邏輯嚴格對齊「途經且已開出」 ---
-                  const seq = parseInt(item.seq) || 1;
-                  const isEnRoute = (seq > 1); // 判斷是否為途經路線
-                  
+                  // --- 終極修正：完全對齊實體 PIDS 的 GPS 邏輯 ---
+                  // 實體屏幕不分「途經」或「總站起載」，只要有實時訊號即顯示圖示
                   const rmk = (item.rmk_tc || "").trim();
-                  const isRealtime = rmk === "" || (!rmk.includes("預定") && !rmk.includes("原定")); // 判斷是否已開出
-
-                  // 只有途經線且已開出，才顯示 GPS 圖示
-                  const hasGpsIcon = isEnRoute && isRealtime;
+                  const hasGpsIcon = rmk === "" || (!rmk.includes("預定") && !rmk.includes("原定"));
                   // ------------------------------------------
 
                   if (!earliest || diffMins < earliest.mins) {
@@ -476,7 +470,6 @@
           ? `<img src="${CITYFLYER_LOGO_SRC}" class="cityflyer-logo-img" alt="Cityflyer" onerror="this.outerHTML='<div class=\\'cityflyer-badge\\'><span class=\\'cf-en\\'>Cityflyer</span><span class=\\'cf-zh\\'>城巴機場快線</span></div>'">` 
           : ``;
 
-        // 應用全新的 GPS 圖示判定
         const gpsHtml = item.hasGpsIcon 
           ? `<img src="${GPS_LOGO_SRC}" class="gps-top-left-icon" alt="GPS">` 
           : ``;
@@ -515,7 +508,7 @@
     function clearCacheAndReload(e) {
       e.stopPropagation();
       if(confirm("即將清除站位快取並重新掃描全城巴路線，確定嗎？")) {
-        localStorage.removeItem("CTB_IR_DYNAMIC_ROUTES_V6");
+        localStorage.removeItem("CTB_IR_DYNAMIC_ROUTES_V7");
         location.reload();
       }
     }
