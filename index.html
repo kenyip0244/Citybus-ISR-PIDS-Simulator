@@ -105,7 +105,7 @@
 
     .route-num {
       font-size: 5.2vw;
-      font-weight: 400; /* 已改為幼體 */
+      font-weight: 400; /* 幼體 */
       color: var(--text-blue);
       letter-spacing: -1.5px;
       line-height: 1;
@@ -283,16 +283,13 @@
     const CITYFLYER_LOGO_SRC = "./Cityflyer_logo.svg";
     const GPS_LOGO_SRC = "./GPS.svg";
 
-    // 藍灣半島 (Island Resort) 開出的主要路線
+    // 擴充：所有藍灣半島 (Island Resort) 開出及途經的主要路線（包括特快、深宵及循環線）
     const IR_ROUTES = [
-      "8H", "8P", "8X", "47P", "82", "82S", "82X", "85", "314",
-      "606", "606X", "682", "694", "694S", "788", "789",
+      "8H", "8P", "8X", "47P", "49X", "82", "82S", "82X", "85", "85P", "88X", "314",
+      "606", "606X", "682", "682P", "694", "694S", "788", "789",
       "A12", "NA12", "N8P", "N8X",
       "106", "106P", "118", "118P", "N118"
     ];
-
-    // 嚴格過濾反方向關鍵字 (返回藍灣半島的抵站班次)
-    const INBOUND_KEYWORDS = ["藍灣半島", "ISLAND RESORT"];
 
     let activeDepartures = [];
     let currentPage = 0;
@@ -301,10 +298,10 @@
 
     // 【自動尋址引擎】查詢每一條路線在藍灣半島總站的真實 Stop ID
     async function buildIrStopMap() {
-      let cached = localStorage.getItem("CTB_IR_STOPS_V1");
+      let cached = localStorage.getItem("CTB_IR_STOPS_V2");
       if (cached) {
         const map = JSON.parse(cached);
-        if (Object.keys(map).length > 5) return map; // 確保有緩存足夠多的路線
+        if (Object.keys(map).length > 5) return map;
       }
 
       const msgDiv = document.getElementById("loadingMsg");
@@ -324,7 +321,7 @@
             const rsJson = await rsRes.json();
             const routeStops = rsJson.data || [];
 
-            for (let i = 0; i < Math.min(10, routeStops.length); i++) {
+            for (let i = 0; i < Math.min(15, routeStops.length); i++) {
               let sid = routeStops[i].stop;
               
               if (knownIrStops.has(sid)) {
@@ -337,7 +334,7 @@
                 const sJson = await sRes.json();
                 const sName = (sJson.data && sJson.data.name_tc) ? sJson.data.name_tc : "";
                 
-                // 掃描包含「藍灣半島」的站點
+                // 只要站點名稱包含藍灣半島即納入監控
                 if (sName.includes("藍灣半島") || sName.includes("Island Resort")) {
                   knownIrStops.add(sid);
                   foundStop = sid;
@@ -358,7 +355,7 @@
         }
       }
       
-      localStorage.setItem("CTB_IR_STOPS_V1", JSON.stringify(map));
+      localStorage.setItem("CTB_IR_STOPS_V2", JSON.stringify(map));
       return map;
     }
 
@@ -390,14 +387,9 @@
               for (const item of list) {
                 if (!item.eta) continue;
 
+                // 移除反方向限制：完全顯示所有途經/開出之實時班次
                 const destZhRaw = (item.dest_tc || "").trim();
                 const destEnRaw = (item.dest_en || "").trim();
-
-                // 排除以藍灣半島為目的地的反方向班次
-                const isInbound = INBOUND_KEYWORDS.some(kw => 
-                  destZhRaw.includes(kw) || destEnRaw.toUpperCase().includes(kw)
-                );
-                if (isInbound) continue;
 
                 const etaTime = new Date(item.eta);
                 const diffMs = etaTime.getTime() - baseTimestamp.getTime();
@@ -409,8 +401,8 @@
                       route: route,
                       isFlyer: route.startsWith("A") || route.startsWith("NA"),
                       mins: diffMins,
-                      destZh: destZhRaw.replace(/^往\s*/, "") || "市區",
-                      destEn: destEnRaw.replace(/^to\s*/i, "") || "Urban Area"
+                      destZh: destZhRaw.replace(/^往\s*/, "") || "藍灣半島",
+                      destEn: destEnRaw.replace(/^to\s*/i, "") || "Island Resort"
                     };
                   }
                 }
@@ -449,12 +441,11 @@
         const row = document.createElement("div");
         row.className = "route-row";
 
-        // Cityflyer Logo (A12 / NA12 會顯示)
+        // Cityflyer Logo
         const badgeHtml = item.isFlyer 
           ? `<img src="${CITYFLYER_LOGO_SRC}" class="cityflyer-logo-img" alt="Cityflyer" onerror="this.outerHTML='<div class=\\'cityflyer-badge\\'><span class=\\'cf-en\\'>Cityflyer</span><span class=\\'cf-zh\\'>城巴機場快線</span></div>'">` 
           : ``;
 
-        // 判定是否為 E 線且時間小於等於 3 分鐘 (保留之前的邏輯)
         const isELine = item.route.startsWith("E");
         const showGpsIcon = isELine && (item.mins <= 3);
 
@@ -496,7 +487,7 @@
     function clearCacheAndReload(e) {
       e.stopPropagation();
       if(confirm("即將清除站位快取並重新尋找正確站點，確定嗎？")) {
-        localStorage.removeItem("CTB_IR_STOPS_V1");
+        localStorage.removeItem("CTB_IR_STOPS_V2");
         location.reload();
       }
     }
