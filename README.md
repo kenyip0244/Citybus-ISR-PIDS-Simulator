@@ -1,4 +1,4 @@
-# Citybus Island Resort PIDS Simulator (城巴小西灣（藍灣半島）旅客資訊顯示屏模擬器)
+# Citybus Island Resort PIDS Simulator 城巴小西灣（藍灣半島）旅客資訊顯示屏模擬器
 
 這是一個基於 HTML、JavaScript 與 Electron 開發的城巴小西灣（藍灣半島）總站旅客資訊顯示屏（PIDS）模擬器。透過直接串接香港政府「資料一線通（DATA.GOV.HK）」的城巴開放數據 API，提供高還原度、低延遲的實時班次資訊。
 
