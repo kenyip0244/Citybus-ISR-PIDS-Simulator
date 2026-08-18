@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citybus Island Resort PIDS Simulator</title>
+  <style>
+    :root {
+      --ctb-blue-bg: #004b99;
+      --ctb-yellow-text: #ffeb3b;
+      --ctb-row-even: #d6e4f3;
+      --ctb-row-odd: #c2d7ed;
+      --flyer-red: #d31820;
+      --bus-blue: #005bac;
+      --text-blue: #002868;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: "Arial", "PingFang HK", "Microsoft JhengHei", "Heiti TC", sans-serif;
+    }
+
+    #pids-container {
+      width: 100vw;
+      height: 100vh;
+      background: #c2d7ed;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* 頂部標題列 (藍底黃字) */
+    .header {
+      height: 7.5%;
+      background: var(--ctb-blue-bg);
+      color: var(--ctb-yellow-text);
+      display: grid;
+      grid-template-columns: 28% 18% 54%;
+      align-items: center;
+      padding: 0 2.5vw;
+      font-weight: bold;
+      border-bottom: 2px solid #002868;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+    }
+
+    .header-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      line-height: 1.1;
+    }
+    .header-col .zh { font-size: 1.4vw; letter-spacing: 1px; }
+    .header-col .en { font-size: 1.05vw; font-weight: bold; }
+
+    /* 班次列表主體 */
+    .route-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .route-row {
+      height: 25%;
+      display: grid;
+      grid-template-columns: 28% 18% 54%;
+      align-items: center;
+      padding: 0 2.5vw;
+      position: relative;
+      border-bottom: 1px solid rgba(0, 40, 104, 0.18);
+    }
+    .route-row:nth-child(even) { background-color: var(--ctb-row-even); }
+    .route-row:nth-child(odd) { background-color: var(--ctb-row-odd); }
+
+    /* 左側色條 */
+    .side-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 10px;
+    }
+    .side-bar.cityflyer { background-color: var(--flyer-red); }
+    .side-bar.standard { background-color: var(--bus-blue); }
+
+    /* 路線號碼欄 */
+    .route-col {
+      display: flex;
+      align-items: center;
+      gap: 0.8vw;
+    }
+
+    .route-num {
+      font-size: 5.2vw;
+      font-weight: 400; /* 已改為幼體 */
+      color: var(--text-blue);
+      letter-spacing: -1.5px;
+      line-height: 1;
+      font-family: "Helvetica Neue", "Arial", sans-serif;
+    }
+
+    /* 真實 Cityflyer SVG 圖片 */
+    .cityflyer-logo-img {
+      height: 3.6vw;
+      max-height: 52px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* 回退用文字 Badge */
+    .cityflyer-badge {
+      display: flex;
+      flex-direction: column;
+      border-left: 2px solid #b3003b;
+      padding-left: 6px;
+      line-height: 1;
+      margin-left: 0.2vw;
+    }
+    .cityflyer-badge .cf-en {
+      color: #b3003b;
+      font-family: "Brush Script MT", "Segoe Script", cursive, sans-serif;
+      font-size: 2vw;
+      font-weight: bold;
+      font-style: italic;
+    }
+    .cityflyer-badge .cf-zh {
+      color: #b3003b;
+      font-size: 0.72vw;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      transform: scale(0.92);
+      transform-origin: left;
+    }
+
+    /* 等候分鐘欄 */
+    .mins-col {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .mins-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mins-num {
+      font-size: 5.2vw;
+      font-weight: bold;
+      color: #111111;
+      line-height: 1;
+    }
+
+    /* GPS 圖示：左上角定位 */
+    .gps-top-left-icon {
+      position: absolute;
+      top: -0.2vw;
+      left: -1.8vw;
+      width: 1.6vw;
+      height: 1.6vw;
+      min-width: 16px;
+      min-height: 16px;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* 目的地欄 */
+    .dest-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+      white-space: nowrap;
+      padding-left: 0.6vw;
+    }
+
+    .dest-zh {
+      font-size: 3.4vw;
+      font-weight: bold;
+      color: #151515;
+      letter-spacing: 1px;
+      line-height: 1.2;
+    }
+
+    .dest-en {
+      font-size: 1.7vw;
+      font-weight: 500;
+      color: #2b2b2b;
+      line-height: 1.2;
+    }
+
+    /* 底部跑馬燈 */
+    .ticker-bar {
+      height: 7.5%;
+      background: var(--ctb-blue-bg);
+      color: var(--ctb-yellow-text);
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      font-size: 2vw;
+      font-weight: bold;
+      white-space: nowrap;
+      border-top: 2px solid #002868;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+    }
+
+    .ticker-content {
+      display: inline-block;
+      padding-left: 100%;
+      animation: ticker 65s linear infinite;
+    }
+
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .status-msg {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      font-size: 2.5vw;
+      color: #002868;
+      font-weight: bold;
+      text-align: center;
+      padding: 0 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 雙擊畫面主體切換全螢幕 -->
+  <div id="pids-container" ondblclick="toggleFullScreen()">
+    
+    <!-- 雙擊頂部標題列可強制清除快取並重新尋找站位 -->
+    <div class="header" ondblclick="clearCacheAndReload(event)">
+      <div class="header-col">
+        <span class="zh">路線</span>
+        <span class="en">Route</span>
+      </div>
+      <div class="header-col" style="text-align: center;">
+        <span class="zh">分鐘</span>
+        <span class="en">Mins</span>
+      </div>
+      <div class="header-col" style="padding-left: 0.6vw;">
+        <span class="zh">目的地</span>
+        <span class="en">Destination</span>
+      </div>
+    </div>
+
+    <div class="route-list" id="routeList">
+      <div class="status-msg" id="loadingMsg">正在啟動系統...<br>System Initializing...</div>
+    </div>
+
+    <!-- 底部官方告示跑馬燈 -->
+    <div class="ticker-bar">
+      <div class="ticker-content" id="tickerText">
+        上述路線的開出時間會因實際交通情況而有所改變，資料僅供參考，敬請留意。 Please note above departure time may fluctuate as a result of traffic conditions. Information is for your reference. 乘客在車廂站立及行走時，請緊握扶手，確保安全。 For safety, please hold the handrail while standing or moving in the bus compartment. 政府公共交通票價優惠計劃，只適用於使用指定八達通並年滿60歲長者及合資格殘疾人士。不合資格的乘客使用此優惠計劃可被罰款甚或檢控。本公司穿著制服之員工有權要求乘客出示身份證明及八達通以供核實。 Only eligible persons with disabilities and passengers aged 60 and above using Octopus corresponding to their eligibility are entitled to enjoy the Government Public Transport Fare Concession Scheme. Ineligible passengers using the Scheme may be liable to penalty or even prosecution. Please present proof of identity and Octopus for verification upon request by our uniformed staff.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PAGE_SIZE = 4;
+    const API_BASE = "https://rt.data.gov.hk/v1/transport/citybus-nwfb";
+    const CITYFLYER_LOGO_SRC = "./Cityflyer_logo.svg";
+    const GPS_LOGO_SRC = "./GPS.svg";
+
+    // 藍灣半島 (Island Resort) 開出的主要路線
+    const IR_ROUTES = [
+      "8H", "8P", "8X", "47P", "82", "82S", "82X", "85", "314",
+      "606", "606X", "682", "694", "694S", "788", "789",
+      "A12", "NA12", "N8P", "N8X",
+      "106", "106P", "118", "118P", "N118"
+    ];
+
+    // 嚴格過濾反方向關鍵字 (返回藍灣半島的抵站班次)
+    const INBOUND_KEYWORDS = ["藍灣半島", "ISLAND RESORT"];
+
+    let activeDepartures = [];
+    let currentPage = 0;
+    let isFetching = false;
+    let routeStopMap = null;
+
+    // 【自動尋址引擎】查詢每一條路線在藍灣半島總站的真實 Stop ID
+    async function buildIrStopMap() {
+      let cached = localStorage.getItem("CTB_IR_STOPS_V1");
+      if (cached) {
+        const map = JSON.parse(cached);
+        if (Object.keys(map).length > 5) return map; // 確保有緩存足夠多的路線
+      }
+
+      const msgDiv = document.getElementById("loadingMsg");
+      if (msgDiv) msgDiv.innerHTML = "系統首次初始化：正在全自動掃描並校準藍灣半島總站真實站位...<br>Auto-calibrating exact Stop IDs (First time only, takes ~3s)...";
+
+      const map = {};
+      const knownIrStops = new Set();
+      const knownNonIrStops = new Set();
+
+      for (let route of IR_ROUTES) {
+        let foundStop = null;
+        
+        for (let dir of ["outbound", "inbound"]) {
+          try {
+            const rsRes = await fetch(`${API_BASE}/route-stop/CTB/${route}/${dir}`);
+            if (!rsRes.ok) continue;
+            const rsJson = await rsRes.json();
+            const routeStops = rsJson.data || [];
+
+            for (let i = 0; i < Math.min(10, routeStops.length); i++) {
+              let sid = routeStops[i].stop;
+              
+              if (knownIrStops.has(sid)) {
+                foundStop = sid; break;
+              }
+              if (knownNonIrStops.has(sid)) continue;
+
+              const sRes = await fetch(`${API_BASE}/stop/${sid}`);
+              if (sRes.ok) {
+                const sJson = await sRes.json();
+                const sName = (sJson.data && sJson.data.name_tc) ? sJson.data.name_tc : "";
+                
+                // 掃描包含「藍灣半島」的站點
+                if (sName.includes("藍灣半島") || sName.includes("Island Resort")) {
+                  knownIrStops.add(sid);
+                  foundStop = sid;
+                  break;
+                } else {
+                  knownNonIrStops.add(sid);
+                }
+              }
+              await new Promise(r => setTimeout(r, 20));
+            }
+          } catch (e) {}
+          
+          if (foundStop) break;
+        }
+        
+        if (foundStop) {
+          map[route] = foundStop;
+        }
+      }
+      
+      localStorage.setItem("CTB_IR_STOPS_V1", JSON.stringify(map));
+      return map;
+    }
+
+    // 核心資料更新
+    async function fetchLiveIrETAs() {
+      if (isFetching) return;
+      isFetching = true;
+
+      try {
+        if (!routeStopMap) {
+          routeStopMap = await buildIrStopMap();
+        }
+
+        const results = [];
+
+        for (const route of IR_ROUTES) {
+          const stopId = routeStopMap[route];
+          if (!stopId) continue;
+
+          try {
+            const res = await fetch(`${API_BASE}/eta/CTB/${stopId}/${route}`);
+            if (res.ok) {
+              const json = await res.json();
+              const list = json.data || [];
+              const baseTimestamp = json.data_timestamp ? new Date(json.data_timestamp) : new Date();
+
+              let earliest = null;
+
+              for (const item of list) {
+                if (!item.eta) continue;
+
+                const destZhRaw = (item.dest_tc || "").trim();
+                const destEnRaw = (item.dest_en || "").trim();
+
+                // 排除以藍灣半島為目的地的反方向班次
+                const isInbound = INBOUND_KEYWORDS.some(kw => 
+                  destZhRaw.includes(kw) || destEnRaw.toUpperCase().includes(kw)
+                );
+                if (isInbound) continue;
+
+                const etaTime = new Date(item.eta);
+                const diffMs = etaTime.getTime() - baseTimestamp.getTime();
+                const diffMins = Math.ceil(diffMs / 60000);
+
+                if (diffMins >= 0) {
+                  if (!earliest || diffMins < earliest.mins) {
+                    earliest = {
+                      route: route,
+                      isFlyer: route.startsWith("A") || route.startsWith("NA"),
+                      mins: diffMins,
+                      destZh: destZhRaw.replace(/^往\s*/, "") || "市區",
+                      destEn: destEnRaw.replace(/^to\s*/i, "") || "Urban Area"
+                    };
+                  }
+                }
+              }
+              if (earliest) results.push(earliest);
+            }
+          } catch (e) {}
+
+          await new Promise(r => setTimeout(r, 60));
+        }
+
+        activeDepartures = results.sort((a, b) => a.mins - b.mins);
+        renderPage();
+
+      } catch (err) {
+        console.error("API 總體查詢異常:", err);
+      } finally {
+        isFetching = false;
+      }
+    }
+
+    function renderPage() {
+      const container = document.getElementById("routeList");
+
+      if (activeDepartures.length === 0) {
+        container.innerHTML = `<div class="status-msg">現時段暫無即將開出的班次<br>No Active Departures Currently</div>`;
+        return;
+      }
+
+      container.innerHTML = "";
+      const totalPages = Math.ceil(activeDepartures.length / PAGE_SIZE);
+      const startIndex = (currentPage % totalPages) * PAGE_SIZE;
+      const currentItems = activeDepartures.slice(startIndex, startIndex + PAGE_SIZE);
+
+      currentItems.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "route-row";
+
+        // Cityflyer Logo (A12 / NA12 會顯示)
+        const badgeHtml = item.isFlyer 
+          ? `<img src="${CITYFLYER_LOGO_SRC}" class="cityflyer-logo-img" alt="Cityflyer" onerror="this.outerHTML='<div class=\\'cityflyer-badge\\'><span class=\\'cf-en\\'>Cityflyer</span><span class=\\'cf-zh\\'>城巴機場快線</span></div>'">` 
+          : ``;
+
+        // 判定是否為 E 線且時間小於等於 3 分鐘 (保留之前的邏輯)
+        const isELine = item.route.startsWith("E");
+        const showGpsIcon = isELine && (item.mins <= 3);
+
+        const gpsHtml = showGpsIcon 
+          ? `<img src="${GPS_LOGO_SRC}" class="gps-top-left-icon" alt="GPS">` 
+          : ``;
+
+        const minsText = item.mins <= 0 ? "Arr" : item.mins;
+
+        row.innerHTML = `
+          <div class="side-bar ${item.isFlyer ? 'cityflyer' : 'standard'}"></div>
+          <div class="route-col">
+            <span class="route-num">${item.route}</span>
+            ${badgeHtml}
+          </div>
+          <div class="mins-col">
+            <div class="mins-wrapper">
+              ${gpsHtml}
+              <span class="mins-num">${minsText}</span>
+            </div>
+          </div>
+          <div class="dest-col">
+            <span class="dest-zh">往 ${item.destZh}</span>
+            <span class="dest-en">to ${item.destEn}</span>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    function clearCacheAndReload(e) {
+      e.stopPropagation();
+      if(confirm("即將清除站位快取並重新尋找正確站點，確定嗎？")) {
+        localStorage.removeItem("CTB_IR_STOPS_V1");
+        location.reload();
+      }
+    }
+
+    // 每 10 秒翻頁
+    setInterval(() => {
+      if (activeDepartures.length > PAGE_SIZE) {
+        currentPage++;
+        renderPage();
+      }
+    }, 10000);
+
+    // 每 15 秒更新一次
+    setInterval(fetchLiveIrETAs, 15000);
+
+    // 初始載入
+    fetchLiveIrETAs();
+  </script>
+</body>
+</html>
