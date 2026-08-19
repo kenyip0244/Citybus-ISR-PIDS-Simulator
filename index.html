@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
-    /* 英文及數字 8x16 點陣字體[cite: 1] */
+    /* 英文及數字 8x16 點陣字體 */
     @font-face {
       font-family: 'EagleII';
       src: url('Ac437_CL_EagleII_8x16.ttf') format('truetype');
@@ -19,7 +19,7 @@
       font-style: normal;
     }
 
-    /* 新巴專用點陣中文字體 (NWS LECIP CHI) */
+    /* 新巴專用點陣中文字體 */
     @font-face {
       font-family: 'NWS LECIP CHI';
       src: url('NWS LECIP CHI.ttf') format('truetype'),
@@ -379,21 +379,20 @@
       padding: 0 20px;
     }
 
-    /* ================= 模式 2 & 3：新巴 經典點陣版 (套用 NWS LECIP CHI 字體) ================= */
+    /* ================= 模式 2 & 3：新巴 經典點陣版 (文字層在底，圖片在上) ================= */
     #retro-pids {
       width: 100%;
       height: 100%;
-      background-image: url('ISR Freq.png');
-      background-size: 100% 100%;
-      background-repeat: no-repeat;
       position: absolute;
       top: 0;
       left: 0;
       display: none;
       overflow: hidden;
+      background: #000;
       font-family: 'NWS LECIP CHI', 'EagleII', 'DotGothic16', monospace, sans-serif;
     }
 
+    /* 底層：文字與 LED 點陣顯示層 (z-index: 1) */
     #retro-led-display {
       position: absolute;
       top: 19.5%;
@@ -404,7 +403,21 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: inset 0 0 15px rgba(255, 170, 0, 0.05);
+      z-index: 1; /* 保證在圖片底下 */
+    }
+
+    /* 頂層：ISR Freq.png 機殼遮罩層 (z-index: 10) */
+    #retro-frame-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('ISR Freq.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      z-index: 10; /* 蓋在文字層上方 */
+      pointer-events: none; /* 穿透點擊事件 */
     }
 
     .retro-departures-list {
@@ -468,7 +481,7 @@
       font-family: 'NWS LECIP CHI', 'EagleII', 'DotGothic16', monospace;
     }
 
-    /* ================= 綠色 LED 跑馬燈容器 ================= */
+    /* 綠色 LED 跑馬燈容器 */
     .retro-bottom-bar {
       height: 22%;
       border-top: none;
@@ -558,14 +571,14 @@
         <div class="menu-card" onclick="startApp('nwfb2001')">
           <span class="card-tag tag-classic">2001 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
-          <div class="card-desc">ISR Freq 機殼 / NWS LECIP 字庫<br>半形年月日符號與步進跑馬燈</div>
+          <div class="card-desc">底層文字 / 頂層機殼遮罩<br>半形年月日符號與步進跑馬燈</div>
         </div>
 
         <!-- 新巴 2015 點陣 -->
         <div class="menu-card" onclick="startApp('nwfb2015')">
           <span class="card-tag tag-classic">2015 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2015 年實時版)</div>
-          <div class="card-desc">ISR Freq 機殼 / NWS LECIP 字庫<br>半形年月日符號與步進跑馬燈</div>
+          <div class="card-desc">底層文字 / 頂層機殼遮罩<br>半形年月日符號與步進跑馬燈</div>
         </div>
       </div>
 
@@ -601,19 +614,22 @@
       </div>
     </div>
 
-    <!-- ================= 模式 2 & 3：新巴 經典點陣版 ================= -->
+    <!-- ================= 模式 2 & 3：新巴 經典點陣版 (分層渲染) ================= -->
     <div id="retro-pids">
       <div class="top-nav-back" ondblclick="backToMenu(event)"></div>
+      
+      <!-- 底層：文字與 LED 點陣層 -->
       <div id="retro-led-display">
         <div class="retro-departures-list" id="retro-departures-list">
           <div class="retro-status-msg" id="retro-loading-msg">正在載入實時班次...<br>Loading Live Data...</div>
         </div>
-        
-        <!-- 綠色底部顯示欄 -->
         <div class="retro-bottom-bar">
           <div id="retro-marquee-stage"></div>
         </div>
       </div>
+
+      <!-- 頂層：外框機殼圖片覆蓋層 -->
+      <div id="retro-frame-overlay"></div>
     </div>
 
   </div>
@@ -696,7 +712,7 @@
       document.getElementById('menu-container').style.display = 'flex';
     }
 
-    /* ================= 全網域動態尋址引擎[cite: 2] ================= */
+    /* ================= 全網域動態尋址引擎 ================= */
     async function buildIrStopMap() {
       let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V12");
       if (cached) {
@@ -956,7 +972,7 @@
       }
     }
 
-    /* ================= 點陣階梯步進 17 步跑馬燈演播引擎 (套用半形字粒 Ë ɱ Ɗ) ================= */
+    /* ================= 點陣階梯步進 17 步跑馬燈演播引擎 ================= */
     let seqRunning = false;
     let seqTimeout = null;
 
@@ -979,7 +995,6 @@
       
       const timeStr = `${hrs}:${mins} ${ampm} ${w}`;
 
-      // 使用新巴藍灣半島班次顯示屏專屬半形字粒：「年 Ë」、「月 ɱ」、「日 Ɗ」
       if (type === 'ZH_1' || type === 'ZH_2') return `${yr}Ë${m + 1}ɱ${d}Ɗ ${timeStr}`;
       if (type === 'EN_FULL') return `${MONTHS_FULL[m]} ${d},${yr} ${timeStr}`;
       if (type === 'EN_SHORT') return `${MONTHS_SHORT[m]} ${d},${yr} ${timeStr}`;
