@@ -609,18 +609,18 @@
         <div class="menu-card" onclick="startApp('nwfb2001')">
           <span class="card-tag tag-classic">2001 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
-          <div class="card-desc">實時到站班次 / 即時時間<br>底層高光發光 / 面層無發光</div>
+          <div class="card-desc">實時到站班次 / 即時時間<br>官方 API 實時票價獲取</div>
         </div>
 
         <!-- 新巴 2015 點陣 (暫停服務展示模式) -->
         <div class="menu-card" onclick="startApp('nwfb2015')">
           <span class="card-tag tag-classic">2015 模擬</span>
           <div class="card-title">新巴 點陣 LED<br>(2015 暫停服務模式)</div>
-          <div class="card-desc">暫停服務 / 即時時間<br>尚餘時間留空 / 步進跑馬燈</div>
+          <div class="card-desc">暫停服務 / 即時時間<br>官方 API 實時票價獲取</div>
         </div>
       </div>
 
-      <button class="btn-clear-cache" onclick="clearCacheAndReload(event)">⟳ 清除全城巴站位快取 Clear Cache</button>
+      <button class="btn-clear-cache" onclick="clearCacheAndReload(event)">⟳ 清除系統快取 Clear Cache</button>
       <div style="font-size: 1.1vmin; color: #777; margin-top: 1.5vmin;">* 雙擊畫面頂部可隨時返回此主選單</div>
     </div>
 
@@ -685,10 +685,12 @@
   <script>
     const PAGE_SIZE = 4;
     const API_BASE = "https://rt.data.gov.hk/v1/transport/citybus-nwfb";
+    const TD_BUS_FARE_API = "https://static.data.gov.hk/td/routes-fares-geojson/JSON_BUS.json";
     const CITYFLYER_LOGO_SRC = "./Cityflyer_logo.svg";
     const GPS_LOGO_SRC = "./GPS.svg";
 
-    const FARE_MAP = {
+    // 備用預設收費表 (在官方 API 獲取前作為立即渲染保障)
+    let dynamicFareMap = {
       "8": "4.3", "8P": "5.8", "8X": "6.7", "82": "5.3", "82X": "5.6",
       "84M": "3.4", "85": "4.7", "85P": "7.0", "106": "9.4", "106P": "9.4", "118": "11.4",
       "118P": "11.4", "606": "12.1", "606X": "12.1", "682": "22.0", "694": "17.4",
@@ -697,14 +699,14 @@
     };
 
     const RETRO_2015_ROUTES = [
-      { route: "106", fare: "9.4" },
-      { route: "8", fare: "4.3" },
-      { route: "84M", fare: "3.4" },
-      { route: "8P", fare: "5.8" },
-      { route: "82", fare: "5.3" },
-      { route: "82X", fare: "5.6" },
-      { route: "85", fare: "4.7" },
-      { route: "118", fare: "11.4" }
+      { route: "106" },
+      { route: "8" },
+      { route: "84M" },
+      { route: "8P" },
+      { route: "82" },
+      { route: "82X" },
+      { route: "85" },
+      { route: "118" }
     ];
 
     let currentMode = null;
@@ -724,10 +726,66 @@
       });
     }
 
+    /* ================= 官方政府 API 票價獲取引擎 ================= */
+    async function loadOfficialFaresFromApi() {
+      const cached = localStorage.getItem("TD_GOV_HK_BUS_FARES_V1");
+      if (cached) {
+        try {
+          const map = JSON.parse(cached);
+          if (Object.keys(map).length > 5) {
+            dynamicFareMap = { ...dynamicFareMap, ...map };
+          }
+        } catch(e) {}
+      }
+
+      try {
+        const res = await fetch(TD_BUS_FARE_API);
+        if (res.ok) {
+          const geoJson = await res.json();
+          const features = geoJson.features || [];
+          const newMap = {};
+
+          features.forEach(f => {
+            const p = f.properties || {};
+            const routeNo = (p.ROUTE_NAME_TC || p.ROUTE_NO || "").trim();
+            const fareVal = p.FULL_FARE || p.FARE;
+            const co = (p.COMPANY_CODE || "").toUpperCase();
+
+            // 匹配城巴及相關跨海/聯營路線
+            if (routeNo && fareVal !== undefined && (co.includes("CTB") || co.includes("NWFB") || co === "")) {
+              const num = parseFloat(fareVal);
+              if (!isNaN(num) && num > 0) {
+                newMap[routeNo] = num.toFixed(1);
+              }
+            }
+          });
+
+          if (Object.keys(newMap).length > 0) {
+            dynamicFareMap = { ...dynamicFareMap, ...newMap };
+            localStorage.setItem("TD_GOV_HK_BUS_FARES_V1", JSON.stringify(dynamicFareMap));
+            
+            // 重新刷新當前顯示的票價
+            if (activeDepartures.length > 0) {
+              activeDepartures.forEach(item => {
+                item.fare = dynamicFareMap[item.route] || item.fare || "5.8";
+              });
+              if (currentMode === 'modern') renderModernPage();
+              else renderRetroPage();
+            }
+          }
+        }
+      } catch(err) {
+        console.warn("運輸署 API 票價載入退回快取/預設值:", err);
+      }
+    }
+
     function startApp(mode) {
       currentMode = mode;
       document.getElementById('menu-container').style.display = 'none';
       currentPage = 0;
+
+      // 啟動官方票價獲取
+      loadOfficialFaresFromApi();
 
       if (mode === 'modern') {
         document.getElementById('modern-pids').style.display = 'flex';
@@ -755,7 +813,7 @@
 
         activeDepartures = RETRO_2015_ROUTES.map(r => ({
           route: r.route,
-          fare: r.fare,
+          fare: dynamicFareMap[r.route] || "5.8",
           isOutOfService: true
         }));
 
@@ -930,7 +988,7 @@
                 if (diffMins >= 0) {
                   const allowedGpsRoutes = ["770", "8H", "NA12"];
                   const hasGpsIcon = allowedGpsRoutes.includes(route) && (diffMins <= 3);
-                  const fareText = FARE_MAP[route] || "5.8";
+                  const fareText = dynamicFareMap[route] || "5.8";
 
                   if (!earliest || diffMins < earliest.mins) {
                     earliest = {
@@ -1055,10 +1113,12 @@
             etaText = `${minsNum}${retroIsEnglish ? 'min' : '分鐘'}`;
           }
 
+          const currentFare = dynamicFareMap[item.route] || item.fare || "5.8";
+
           const rowHtml = `
             <div class="retro-col-route">${item.route}</div>
             <div class="retro-col-dest">${destText}</div>
-            <div class="retro-col-fare">${item.fare}</div>
+            <div class="retro-col-fare">${currentFare}</div>
             <div class="retro-col-eta">${etaText}</div>
           `;
           rowBottom.innerHTML = rowHtml;
@@ -1083,7 +1143,7 @@
 
     function getFormattedTime(type) {
       const now = new Date();
-      const yr = now.getFullYear(); // 即時年份
+      const yr = now.getFullYear();
       const m = now.getMonth();
       const d = now.getDate();
       const w = WEEK_DAYS[now.getDay()];
