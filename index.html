@@ -5,15 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>小西灣（藍灣半島）巴士總站 PIDS 模擬器</title>
   
-  <!-- 引入 Google Fonts DotGothic16 (16點陣中文) 與 Roboto -->
+  <!-- 引入備用 Google Fonts 點陣字體與 Roboto -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
+    /* 英文及數字專用 8x16 點陣字體[cite: 1] */
     @font-face {
       font-family: 'EagleII';
       src: url('Ac437_CL_EagleII_8x16.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    /* 中文專用 ET16x15 點陣字體 */
+    @font-face {
+      font-family: 'ET16x15';
+      src: url('ET16x15.ttf') format('truetype');
       font-weight: normal;
       font-style: normal;
     }
@@ -33,7 +42,6 @@
       --led-amber-glow: rgba(255, 170, 0, 0.65);
       --led-green: #00ff44;
       --led-green-glow: rgba(0, 255, 68, 0.7);
-      --led-red: #ff3300;
       --screen-bg: #000000;
     }
 
@@ -369,7 +377,7 @@
       padding: 0 20px;
     }
 
-    /* ================= 模式 2 & 3：新巴 經典點陣版 ================= */
+    /* ================= 模式 2 & 3：新巴 經典點陣版 (套用 ET16x15 點陣中文) ================= */
     #retro-pids {
       width: 100%;
       height: 100%;
@@ -381,7 +389,7 @@
       left: 0;
       display: none;
       overflow: hidden;
-      font-family: 'EagleII', 'DotGothic16', monospace, sans-serif;
+      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace, sans-serif;
     }
 
     #retro-led-display {
@@ -427,7 +435,7 @@
       white-space: nowrap;
       overflow: hidden;
       letter-spacing: 0.1vmin;
-      font-family: 'EagleII', 'DotGothic16', monospace;
+      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
     }
 
     .retro-col-fare {
@@ -439,20 +447,11 @@
 
     .retro-col-eta {
       font-size: 5.8vmin;
-      font-family: 'EagleII', 'DotGothic16', monospace;
+      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
       text-align: right;
       padding-right: 5%;
-    }
-
-    .retro-eta-arriving {
-      color: var(--led-red);
-      text-shadow: 0 0 8px rgba(255, 51, 0, 0.8);
-      animation: blink 1s infinite alternate;
-    }
-
-    @keyframes blink {
-      0% { opacity: 1; }
-      100% { opacity: 0.3; }
+      color: var(--led-amber);
+      text-shadow: 0 0 5px var(--led-amber-glow);
     }
 
     .retro-status-msg {
@@ -464,10 +463,10 @@
       color: var(--led-amber);
       text-shadow: 0 0 8px var(--led-amber-glow);
       text-align: center;
-      font-family: 'EagleII', 'DotGothic16', monospace;
+      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
     }
 
-    /* ================= 綠色 LED 跑馬燈容器 (無邊框、階梯步進點陣感) ================= */
+    /* ================= 綠色 LED 跑馬燈容器 ================= */
     .retro-bottom-bar {
       height: 22%;
       border-top: none;
@@ -491,7 +490,7 @@
       font-size: 7.2vmin;
       line-height: 1;
       letter-spacing: 0.8vmin;
-      font-family: 'EagleII', 'DotGothic16', monospace;
+      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
       white-space: nowrap;
       position: relative;
       overflow: hidden;
@@ -504,7 +503,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'EagleII', 'DotGothic16', monospace;
+      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
     }
 
     .split-wrapper {
@@ -514,7 +513,7 @@
       align-items: center;
       justify-content: center;
       position: absolute;
-      font-family: 'EagleII', 'DotGothic16', monospace;
+      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
     }
 
     .split-half {
@@ -522,7 +521,7 @@
       white-space: nowrap;
       overflow: hidden;
       will-change: transform, opacity;
-      font-family: 'EagleII', 'DotGothic16', monospace;
+      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
     }
 
     .top-nav-back {
@@ -557,14 +556,14 @@
         <div class="menu-card" onclick="startApp('nwfb2001')">
           <span class="card-tag tag-classic">2001 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
-          <div class="card-desc">ISR Freq 機殼 / DotGothic16 點陣<br>全實時 API 與點陣步進跑馬燈</div>
+          <div class="card-desc">ISR Freq 機殼 / ET16x15 點陣<br>路線順序排列與步進跑馬燈</div>
         </div>
 
         <!-- 新巴 2015 點陣 -->
         <div class="menu-card" onclick="startApp('nwfb2015')">
           <span class="card-tag tag-classic">2015 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2015 年實時版)</div>
-          <div class="card-desc">ISR Freq 機殼 / DotGothic16 點陣<br>全實時 API 與點陣步進跑馬燈</div>
+          <div class="card-desc">ISR Freq 機殼 / ET16x15 點陣<br>路線順序排列與步進跑馬燈</div>
         </div>
       </div>
 
@@ -695,7 +694,7 @@
       document.getElementById('menu-container').style.display = 'flex';
     }
 
-    /* ================= 全網域動態尋址引擎 ================= */
+    /* ================= 全網域動態尋址引擎[cite: 2] ================= */
     async function buildIrStopMap() {
       let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V12");
       if (cached) {
@@ -852,11 +851,12 @@
           await new Promise(r => setTimeout(r, 45));
         }
 
-        activeDepartures = results.sort((a, b) => a.mins - b.mins);
-
         if (currentMode === 'modern') {
+          activeDepartures = results.sort((a, b) => a.mins - b.mins);
           renderModernPage();
         } else {
+          // 點陣版按路線編號順序排列
+          activeDepartures = results.sort((a, b) => a.route.localeCompare(b.route, undefined, { numeric: true, sensitivity: 'base' }));
           renderRetroPage();
         }
 
@@ -915,7 +915,7 @@
       });
     }
 
-    /* ================= 新巴點陣版渲染 ================= */
+    /* ================= 新巴點陣版渲染 (ET16x15 點陣中文字體) ================= */
     function renderRetroPage() {
       const container = document.getElementById('retro-departures-list');
       
@@ -937,12 +937,8 @@
           const item = currentItems[i];
           const destText = retroIsEnglish ? toTitleCase(item.destEn) : item.destZh;
           
-          let etaText = '';
-          if (item.mins <= 0) {
-            etaText = `<span class="retro-eta-arriving">${retroIsEnglish ? '1min' : '1分鐘'}</span>`;
-          } else {
-            etaText = `${item.mins}${retroIsEnglish ? 'min' : '分鐘'}`;
-          }
+          const minsNum = item.mins <= 0 ? 0 : item.mins;
+          const etaText = `${minsNum}${retroIsEnglish ? 'min' : '分鐘'}`;
 
           row.innerHTML = `
             <div class="retro-col-route">${item.route}</div>
@@ -958,7 +954,7 @@
       }
     }
 
-    /* ================= 點陣階梯步進 (Stepped Tick) 17 步跑馬燈演播引擎 ================= */
+    /* ================= 點陣階梯步進 17 步跑馬燈演播引擎 ================= */
     let seqRunning = false;
     let seqTimeout = null;
 
@@ -1082,7 +1078,6 @@
       stage.innerHTML = '';
       const stageW = stage.clientWidth;
 
-      // 左右開門式拉開消失
       if (step.outAnim === "splitOut") {
         const mid = Math.floor(textToDisplay.length / 2);
         const leftText = textToDisplay.substring(0, mid);
@@ -1096,7 +1091,6 @@
         `;
         stage.appendChild(wrap);
 
-        // 階梯式卡頓向上滑入 (steps: 12 幀)
         if (step.inAnim === "slideUpIn") {
           wrap.style.transform = 'translateY(150%)';
           wrap.style.transition = 'none';
@@ -1112,7 +1106,7 @@
           const targetX = -(elW - stageW);
           const distance = stageW - targetX;
           const duration = (distance / stageW) * 7.5;
-          const stepCount = Math.floor(duration * 12); // 每秒約 12 步頓挫
+          const stepCount = Math.floor(duration * 12);
           wrap.style.transition = `transform ${duration}s steps(${stepCount}, end)`;
           wrap.style.transform = `translateX(${targetX}px)`;
           await wait(duration * 1000);
@@ -1120,7 +1114,6 @@
 
         if (step.hold > 0) await wait(step.hold);
 
-        // 階梯式開門拉開消失 (steps: 10 幀)
         const leftHalf = wrap.querySelector('.split-left');
         const rightHalf = wrap.querySelector('.split-right');
         leftHalf.style.transition = 'transform 1.8s steps(10, end), opacity 1.8s steps(4, end)';
@@ -1132,7 +1125,6 @@
         await wait(1850);
 
       } else {
-        // 標準單行渲染
         const el = document.createElement('div');
         el.className = 'seq-item';
         el.innerText = textToDisplay;
@@ -1141,7 +1133,6 @@
         const elW = el.scrollWidth;
 
         if (step.inAnim === "slideRightIn") {
-          // 階梯式向右卡頓滑入 (steps: 14 幀)
           el.style.transform = `translateX(-${stageW}px)`;
           el.style.transition = 'none';
           void el.offsetWidth;
@@ -1150,7 +1141,6 @@
           await wait(2250);
         } 
         else if (step.inAnim === "slideDownIn") {
-          // 階梯式向下卡頓滑入 (steps: 10 幀)
           el.style.transform = 'translateY(-150%)';
           el.style.transition = 'none';
           void el.offsetWidth;
@@ -1197,13 +1187,12 @@
           await wait(1850);
         }
         else if (step.inAnim === "fullMarquee") {
-          // 完整階梯式頓挫跑馬燈
           el.style.transform = `translateX(${stageW}px)`;
           el.style.transition = 'none';
           void el.offsetWidth;
           const distance = stageW + elW;
           const duration = (distance / stageW) * 7.5;
-          const stepCount = Math.floor(duration * 12); // 每秒約 12 步頓挫
+          const stepCount = Math.floor(duration * 12);
           el.style.transition = `transform ${duration}s steps(${stepCount}, end)`;
           el.style.transform = `translateX(-${elW}px)`;
           await wait(duration * 1000);
@@ -1211,7 +1200,6 @@
 
         if (step.hold > 0) await wait(step.hold);
 
-        // 階梯式卡頓滑出 (steps: 12 幀)
         if (step.outAnim === "slideLeftOut") {
           el.style.transition = 'transform 1.8s steps(12, end)';
           el.style.transform = `translateX(-${stageW}px)`;
