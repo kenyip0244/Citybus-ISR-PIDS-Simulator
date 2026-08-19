@@ -459,9 +459,10 @@
       padding: 0.2% 0.8%;
     }
 
+    /* 精確對齊上方外框：Route No. (16%) | Destination (50%) | Fare (14%) | Time Remaining (20%) */
     .retro-dep-row {
       display: grid;
-      grid-template-columns: 16% 56% 13% 15%;
+      grid-template-columns: 16% 50% 14% 20%;
       align-items: center;
       color: var(--led-amber);
       text-shadow: var(--led-amber-glow);
@@ -469,35 +470,42 @@
       width: 100%;
     }
 
+    /* 路線號碼：放大並適當靠左留安全距 */
     .retro-col-route {
-      font-size: 7.8vmin;
+      font-size: 8.4vmin;
       font-family: var(--retro-font-stack);
       text-align: left;
-      padding-left: 2.5%;
+      padding-left: 2%;
       letter-spacing: 0;
       white-space: nowrap;
     }
 
+    /* 路線方向／終點站：移中對齊、加大字體 */
     .retro-col-dest {
-      font-size: 6.8vmin;
-      text-align: left;
-      padding-left: 1%;
+      font-size: 8.0vmin;
+      text-align: center; /* 完全移中 */
+      padding: 0 1%;
       white-space: nowrap;
       overflow: hidden;
-      letter-spacing: 0.05vmin;
+      letter-spacing: 0.15vmin;
       font-family: var(--retro-font-stack);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
+    /* 票價：放大並靠右 */
     .retro-col-fare {
-      font-size: 7.8vmin;
+      font-size: 8.4vmin;
       font-family: var(--retro-font-stack);
       text-align: right;
-      padding-right: 20%;
+      padding-right: 18%;
       white-space: nowrap;
     }
 
+    /* 尚餘時間：放大並靠右 */
     .retro-col-eta {
-      font-size: 7.8vmin;
+      font-size: 8.4vmin;
       font-family: var(--retro-font-stack);
       text-align: right;
       padding-right: 2%;
@@ -511,7 +519,7 @@
       justify-content: center;
       align-items: center;
       height: 100%;
-      font-size: 4.5vmin;
+      font-size: 5.0vmin;
       color: var(--led-amber);
       text-shadow: var(--led-amber-glow);
       text-align: center;
@@ -539,7 +547,7 @@
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      font-size: 9.0vmin;
+      font-size: 9.2vmin;
       line-height: 1;
       letter-spacing: 0.5vmin;
       font-family: var(--retro-font-stack);
@@ -609,14 +617,14 @@
         <div class="menu-card" onclick="startApp('nwfb2001')">
           <span class="card-tag tag-classic">2001 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
-          <div class="card-desc">實時到站班次 / 即時時間<br>官方 API 實時票價獲取</div>
+          <div class="card-desc">路線方向置中放大 / 實時票價<br>底層高光發光 / 面層無發光</div>
         </div>
 
         <!-- 新巴 2015 點陣 (暫停服務展示模式) -->
         <div class="menu-card" onclick="startApp('nwfb2015')">
           <span class="card-tag tag-classic">2015 模擬</span>
           <div class="card-title">新巴 點陣 LED<br>(2015 暫停服務模式)</div>
-          <div class="card-desc">暫停服務 / 即時時間<br>官方 API 實時票價獲取</div>
+          <div class="card-desc">暫停服務 / 路線方向置中<br>尚餘時間留空 / 步進跑馬燈</div>
         </div>
       </div>
 
@@ -689,7 +697,6 @@
     const CITYFLYER_LOGO_SRC = "./Cityflyer_logo.svg";
     const GPS_LOGO_SRC = "./GPS.svg";
 
-    // 備用預設收費表 (在官方 API 獲取前作為立即渲染保障)
     let dynamicFareMap = {
       "8": "4.3", "8P": "5.8", "8X": "6.7", "82": "5.3", "82X": "5.6",
       "84M": "3.4", "85": "4.7", "85P": "7.0", "106": "9.4", "106P": "9.4", "118": "11.4",
@@ -726,7 +733,6 @@
       });
     }
 
-    /* ================= 官方政府 API 票價獲取引擎 ================= */
     async function loadOfficialFaresFromApi() {
       const cached = localStorage.getItem("TD_GOV_HK_BUS_FARES_V1");
       if (cached) {
@@ -751,7 +757,6 @@
             const fareVal = p.FULL_FARE || p.FARE;
             const co = (p.COMPANY_CODE || "").toUpperCase();
 
-            // 匹配城巴及相關跨海/聯營路線
             if (routeNo && fareVal !== undefined && (co.includes("CTB") || co.includes("NWFB") || co === "")) {
               const num = parseFloat(fareVal);
               if (!isNaN(num) && num > 0) {
@@ -764,7 +769,6 @@
             dynamicFareMap = { ...dynamicFareMap, ...newMap };
             localStorage.setItem("TD_GOV_HK_BUS_FARES_V1", JSON.stringify(dynamicFareMap));
             
-            // 重新刷新當前顯示的票價
             if (activeDepartures.length > 0) {
               activeDepartures.forEach(item => {
                 item.fare = dynamicFareMap[item.route] || item.fare || "5.8";
@@ -784,7 +788,6 @@
       document.getElementById('menu-container').style.display = 'none';
       currentPage = 0;
 
-      // 啟動官方票價獲取
       loadOfficialFaresFromApi();
 
       if (mode === 'modern') {
@@ -1073,7 +1076,7 @@
       });
     }
 
-    /* ================= 新巴點陣版渲染 ================= */
+    /* ================= 新巴點陣版渲染 (路線方向移中、各欄位放大) ================= */
     function renderRetroPage() {
       const containerBottom = document.getElementById('retro-departures-list');
       const containerTop = document.getElementById('retro-departures-list-top');
