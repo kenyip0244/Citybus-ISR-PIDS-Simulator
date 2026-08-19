@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
-    /* 英文及數字專用 8x16 點陣字體[cite: 1] */
+    /* 英文及數字 8x16 點陣字體[cite: 1] */
     @font-face {
       font-family: 'EagleII';
       src: url('Ac437_CL_EagleII_8x16.ttf') format('truetype');
@@ -19,10 +19,12 @@
       font-style: normal;
     }
 
-    /* 中文專用 ET16x15 點陣字體 */
+    /* 新巴專用點陣中文字體 (NWS LECIP CHI) */
     @font-face {
-      font-family: 'ET16x15';
-      src: url('ET16x15.ttf') format('truetype');
+      font-family: 'NWS LECIP CHI';
+      src: url('NWS LECIP CHI.ttf') format('truetype'),
+           url('NWS LECIP CHI V2.ttf') format('truetype'),
+           url('ET16x15.ttf') format('truetype');
       font-weight: normal;
       font-style: normal;
     }
@@ -377,7 +379,7 @@
       padding: 0 20px;
     }
 
-    /* ================= 模式 2 & 3：新巴 經典點陣版 (套用 ET16x15 點陣中文) ================= */
+    /* ================= 模式 2 & 3：新巴 經典點陣版 (套用 NWS LECIP CHI 字體) ================= */
     #retro-pids {
       width: 100%;
       height: 100%;
@@ -389,7 +391,7 @@
       left: 0;
       display: none;
       overflow: hidden;
-      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace, sans-serif;
+      font-family: 'NWS LECIP CHI', 'EagleII', 'DotGothic16', monospace, sans-serif;
     }
 
     #retro-led-display {
@@ -422,7 +424,7 @@
 
     .retro-col-route {
       font-size: 6.2vmin;
-      font-family: 'EagleII', monospace;
+      font-family: 'EagleII', 'NWS LECIP CHI', monospace;
       text-align: left;
       padding-left: 1.5%;
       letter-spacing: 0.05vmin;
@@ -435,19 +437,19 @@
       white-space: nowrap;
       overflow: hidden;
       letter-spacing: 0.1vmin;
-      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
+      font-family: 'NWS LECIP CHI', 'EagleII', 'DotGothic16', monospace;
     }
 
     .retro-col-fare {
       font-size: 5.8vmin;
-      font-family: 'EagleII', monospace;
+      font-family: 'EagleII', 'NWS LECIP CHI', monospace;
       text-align: right;
       padding-right: 25%;
     }
 
     .retro-col-eta {
       font-size: 5.8vmin;
-      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
+      font-family: 'NWS LECIP CHI', 'EagleII', 'DotGothic16', monospace;
       text-align: right;
       padding-right: 5%;
       color: var(--led-amber);
@@ -463,7 +465,7 @@
       color: var(--led-amber);
       text-shadow: 0 0 8px var(--led-amber-glow);
       text-align: center;
-      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
+      font-family: 'NWS LECIP CHI', 'EagleII', 'DotGothic16', monospace;
     }
 
     /* ================= 綠色 LED 跑馬燈容器 ================= */
@@ -490,7 +492,7 @@
       font-size: 7.2vmin;
       line-height: 1;
       letter-spacing: 0.8vmin;
-      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
+      font-family: 'NWS LECIP CHI', 'EagleII', 'DotGothic16', monospace;
       white-space: nowrap;
       position: relative;
       overflow: hidden;
@@ -503,7 +505,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
+      font-family: 'NWS LECIP CHI', 'EagleII', 'DotGothic16', monospace;
     }
 
     .split-wrapper {
@@ -513,7 +515,7 @@
       align-items: center;
       justify-content: center;
       position: absolute;
-      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
+      font-family: 'NWS LECIP CHI', 'EagleII', 'DotGothic16', monospace;
     }
 
     .split-half {
@@ -521,7 +523,7 @@
       white-space: nowrap;
       overflow: hidden;
       will-change: transform, opacity;
-      font-family: 'EagleII', 'ET16x15', 'DotGothic16', monospace;
+      font-family: 'NWS LECIP CHI', 'EagleII', 'DotGothic16', monospace;
     }
 
     .top-nav-back {
@@ -556,14 +558,14 @@
         <div class="menu-card" onclick="startApp('nwfb2001')">
           <span class="card-tag tag-classic">2001 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
-          <div class="card-desc">ISR Freq 機殼 / ET16x15 點陣<br>路線順序排列與步進跑馬燈</div>
+          <div class="card-desc">ISR Freq 機殼 / NWS LECIP 字庫<br>半形年月日符號與步進跑馬燈</div>
         </div>
 
         <!-- 新巴 2015 點陣 -->
         <div class="menu-card" onclick="startApp('nwfb2015')">
           <span class="card-tag tag-classic">2015 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2015 年實時版)</div>
-          <div class="card-desc">ISR Freq 機殼 / ET16x15 點陣<br>路線順序排列與步進跑馬燈</div>
+          <div class="card-desc">ISR Freq 機殼 / NWS LECIP 字庫<br>半形年月日符號與步進跑馬燈</div>
         </div>
       </div>
 
@@ -915,7 +917,7 @@
       });
     }
 
-    /* ================= 新巴點陣版渲染 (ET16x15 點陣中文字體) ================= */
+    /* ================= 新巴點陣版渲染 ================= */
     function renderRetroPage() {
       const container = document.getElementById('retro-departures-list');
       
@@ -954,7 +956,7 @@
       }
     }
 
-    /* ================= 點陣階梯步進 17 步跑馬燈演播引擎 ================= */
+    /* ================= 點陣階梯步進 17 步跑馬燈演播引擎 (套用半形字粒 Ë ɱ Ɗ) ================= */
     let seqRunning = false;
     let seqTimeout = null;
 
@@ -977,10 +979,11 @@
       
       const timeStr = `${hrs}:${mins} ${ampm} ${w}`;
 
-      if (type === 'ZH_1' || type === 'ZH_2') return `${yr}年${m + 1}月${d}日 ${timeStr}`;
+      // 使用新巴藍灣半島班次顯示屏專屬半形字粒：「年 Ë」、「月 ɱ」、「日 Ɗ」
+      if (type === 'ZH_1' || type === 'ZH_2') return `${yr}Ë${m + 1}ɱ${d}Ɗ ${timeStr}`;
       if (type === 'EN_FULL') return `${MONTHS_FULL[m]} ${d},${yr} ${timeStr}`;
       if (type === 'EN_SHORT') return `${MONTHS_SHORT[m]} ${d},${yr} ${timeStr}`;
-      return `${yr}年${m + 1}月${d}日 ${timeStr}`;
+      return `${yr}Ë${m + 1}ɱ${d}Ɗ ${timeStr}`;
     }
 
     const SEQUENCE_STEPS = [
