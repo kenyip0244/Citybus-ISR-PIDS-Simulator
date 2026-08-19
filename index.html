@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
-    /* 英文及數字 8x16 點陣字體 */
+    /* 英文及數字 8x16 點陣字體[cite: 1] */
     @font-face {
       font-family: 'EagleII';
       src: url('Ac437_CL_EagleII_8x16.ttf') format('truetype');
@@ -53,11 +53,11 @@
       --bus-blue: #005bac;
       --text-blue: #002868;
 
-      /* 新巴點陣版配色 */
-      --led-amber: #ffaa00;
-      --led-amber-glow: rgba(255, 170, 0, 0.65);
-      --led-green: #00ff44;
-      --led-green-glow: rgba(0, 255, 68, 0.7);
+      /* 新巴高亮度發光點陣配色 */
+      --led-amber: #ffcc00;
+      --led-amber-glow: 0 0 2px #ffffff, 0 0 6px #ffbb00, 0 0 14px rgba(255, 170, 0, 0.95);
+      --led-green: #22ff55;
+      --led-green-glow: 0 0 2px #ffffff, 0 0 8px #00ff44, 0 0 18px rgba(0, 255, 68, 0.98);
       --screen-bg: #000000;
 
       /* 點陣模式標準字型層級宣告 */
@@ -396,7 +396,7 @@
       padding: 0 20px;
     }
 
-    /* ================= 模式 2 & 3：新巴 經典點陣版 (套用指定字型層級) ================= */
+    /* ================= 模式 2 & 3：新巴 經典點陣版 (三層架構) ================= */
     #retro-pids {
       width: 100%;
       height: 100%;
@@ -409,21 +409,25 @@
       font-family: var(--retro-font-stack);
     }
 
-    /* 底層：文字與 LED 點陣層 */
-    #retro-led-display {
+    /* 通用點陣層佈局 */
+    .led-display-layer {
       position: absolute;
       top: 19.5%;
       left: 6.8%;
       width: 86.4%;
       height: 61.8%;
-      background-color: var(--screen-bg);
       display: flex;
       flex-direction: column;
       overflow: hidden;
+    }
+
+    /* 1. 底層：100% 不透明度文字與 LED 點陣層 (z-index: 1) */
+    #retro-led-display {
+      background-color: var(--screen-bg);
       z-index: 1;
     }
 
-    /* 頂層：ISR Freq.png 機殼遮罩層 */
+    /* 2. 中層：ISR Freq.png 機殼遮罩層 (z-index: 10) */
     #retro-frame-overlay {
       position: absolute;
       top: 0;
@@ -434,6 +438,14 @@
       background-size: 100% 100%;
       background-repeat: no-repeat;
       z-index: 10;
+      pointer-events: none;
+    }
+
+    /* 3. 頂層：同下層一樣嘅文字，不透明度為 20% (z-index: 20) */
+    #retro-led-display-top {
+      background-color: transparent;
+      z-index: 20;
+      opacity: 0.2;
       pointer-events: none;
     }
 
@@ -449,7 +461,7 @@
       grid-template-columns: 18% 51% 14% 17%;
       align-items: center;
       color: var(--led-amber);
-      text-shadow: 0 0 5px var(--led-amber-glow);
+      text-shadow: var(--led-amber-glow);
     }
 
     .retro-col-route {
@@ -483,7 +495,7 @@
       text-align: right;
       padding-right: 5%;
       color: var(--led-amber);
-      text-shadow: 0 0 5px var(--led-amber-glow);
+      text-shadow: var(--led-amber-glow);
     }
 
     .retro-status-msg {
@@ -493,39 +505,40 @@
       height: 100%;
       font-size: 3.5vmin;
       color: var(--led-amber);
-      text-shadow: 0 0 8px var(--led-amber-glow);
+      text-shadow: var(--led-amber-glow);
       text-align: center;
       font-family: var(--retro-font-stack);
     }
 
-    /* 綠色 LED 跑馬燈容器 */
+    /* 綠色 LED 跑馬燈容器 (貼底、加大、高亮度發光) */
     .retro-bottom-bar {
-      height: 22%;
+      height: 25%;
       border-top: none;
       display: flex;
-      align-items: center;
+      align-items: flex-end; /* 貼底 */
       justify-content: center;
       padding: 0;
       color: var(--led-green);
-      text-shadow: 0 0 8px var(--led-green-glow);
+      text-shadow: var(--led-green-glow);
       overflow: hidden;
       background: transparent;
       position: relative;
     }
 
-    #retro-marquee-stage {
+    .marquee-stage-inner {
       width: 100%;
       height: 100%;
       display: flex;
-      align-items: center;
+      align-items: flex-end; /* 貼底 */
       justify-content: center;
-      font-size: 7.2vmin;
+      font-size: 8.2vmin; /* 更大隻 */
       line-height: 1;
       letter-spacing: 0.8vmin;
       font-family: var(--retro-font-stack);
       white-space: nowrap;
       position: relative;
       overflow: hidden;
+      padding-bottom: 0.2vmin;
     }
 
     .seq-item {
@@ -533,7 +546,7 @@
       white-space: nowrap;
       will-change: transform, opacity;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
       font-family: var(--retro-font-stack);
     }
@@ -542,7 +555,7 @@
       display: flex;
       width: 100%;
       height: 100%;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
       position: absolute;
       font-family: var(--retro-font-stack);
@@ -588,14 +601,14 @@
         <div class="menu-card" onclick="startApp('nwfb2001')">
           <span class="card-tag tag-classic">2001 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
-          <div class="card-desc">ET16x15 / NWS LECIP 字庫<br>半形年月日符號與步進跑馬燈</div>
+          <div class="card-desc">ET16x15 / NWS LECIP 字庫<br>高亮度點陣 / 頂層20%疊加層</div>
         </div>
 
         <!-- 新巴 2015 點陣 -->
         <div class="menu-card" onclick="startApp('nwfb2015')">
           <span class="card-tag tag-classic">2015 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2015 年實時版)</div>
-          <div class="card-desc">ET16x15 / NWS LECIP 字庫<br>半形年月日符號與步進跑馬燈</div>
+          <div class="card-desc">ET16x15 / NWS LECIP 字庫<br>高亮度點陣 / 頂層20%疊加層</div>
         </div>
       </div>
 
@@ -631,22 +644,32 @@
       </div>
     </div>
 
-    <!-- ================= 模式 2 & 3：新巴 經典點陣版 (分層渲染) ================= -->
+    <!-- ================= 模式 2 & 3：新巴 經典點陣版 (三層結構) ================= -->
     <div id="retro-pids">
       <div class="top-nav-back" ondblclick="backToMenu(event)"></div>
       
-      <!-- 底層：文字與 LED 點陣層 -->
-      <div id="retro-led-display">
+      <!-- 1. 底層：100% 不透明度文字與 LED 點陣層 -->
+      <div id="retro-led-display" class="led-display-layer">
         <div class="retro-departures-list" id="retro-departures-list">
           <div class="retro-status-msg" id="retro-loading-msg">正在載入實時班次...<br>Loading Live Data...</div>
         </div>
         <div class="retro-bottom-bar">
-          <div id="retro-marquee-stage"></div>
+          <div id="retro-marquee-stage" class="marquee-stage-inner"></div>
         </div>
       </div>
 
-      <!-- 頂層：外框機殼圖片覆蓋層 -->
+      <!-- 2. 中層：外框機殼圖片遮罩層 -->
       <div id="retro-frame-overlay"></div>
+
+      <!-- 3. 頂層：同下層一樣嘅文字，不透明度設定為 20% -->
+      <div id="retro-led-display-top" class="led-display-layer">
+        <div class="retro-departures-list" id="retro-departures-list-top">
+          <div class="retro-status-msg" id="retro-loading-msg-top">正在載入實時班次...<br>Loading Live Data...</div>
+        </div>
+        <div class="retro-bottom-bar">
+          <div id="retro-marquee-stage-top" class="marquee-stage-inner"></div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -739,9 +762,11 @@
 
       const msgDiv = document.getElementById("loadingMsg");
       const retroMsgDiv = document.getElementById("retro-loading-msg");
+      const retroMsgDivTop = document.getElementById("retro-loading-msg-top");
       const loadText = "正在搜尋藍灣半島所有實時路線...<br>Discovering Live Routes...";
       if (msgDiv) msgDiv.innerHTML = loadText;
       if (retroMsgDiv) retroMsgDiv.innerHTML = loadText;
+      if (retroMsgDivTop) retroMsgDivTop.innerHTML = loadText;
 
       const map = {};
       const irStopIds = new Set(); 
@@ -890,7 +915,6 @@
           activeDepartures = results.sort((a, b) => a.mins - b.mins);
           renderModernPage();
         } else {
-          // 點陣版按路線編號順序排列
           activeDepartures = results.sort((a, b) => a.route.localeCompare(b.route, undefined, { numeric: true, sensitivity: 'base' }));
           renderRetroPage();
         }
@@ -950,23 +974,30 @@
       });
     }
 
-    /* ================= 新巴點陣版渲染 ================= */
+    /* ================= 新巴點陣版渲染 (同時渲染底層與頂層 20% 疊加層) ================= */
     function renderRetroPage() {
-      const container = document.getElementById('retro-departures-list');
+      const containerBottom = document.getElementById('retro-departures-list');
+      const containerTop = document.getElementById('retro-departures-list-top');
       
       if (activeDepartures.length === 0) {
-        container.innerHTML = `<div class="retro-status-msg">現時段暫無班次<br>NO DEPARTURES</div>`;
+        const emptyHtml = `<div class="retro-status-msg">現時段暫無班次<br>NO DEPARTURES</div>`;
+        containerBottom.innerHTML = emptyHtml;
+        containerTop.innerHTML = emptyHtml;
         return;
       }
 
-      container.innerHTML = '';
+      containerBottom.innerHTML = '';
+      containerTop.innerHTML = '';
       const totalPages = Math.ceil(activeDepartures.length / PAGE_SIZE);
       const startIndex = (currentPage % totalPages) * PAGE_SIZE;
       const currentItems = activeDepartures.slice(startIndex, startIndex + PAGE_SIZE);
 
       for (let i = 0; i < PAGE_SIZE; i++) {
-        const row = document.createElement('div');
-        row.className = 'retro-dep-row';
+        const rowBottom = document.createElement('div');
+        rowBottom.className = 'retro-dep-row';
+
+        const rowTop = document.createElement('div');
+        rowTop.className = 'retro-dep-row';
 
         if (i < currentItems.length) {
           const item = currentItems[i];
@@ -975,21 +1006,25 @@
           const minsNum = item.mins <= 0 ? 0 : item.mins;
           const etaText = `${minsNum}${retroIsEnglish ? 'min' : '分鐘'}`;
 
-          row.innerHTML = `
+          const rowHtml = `
             <div class="retro-col-route">${item.route}</div>
             <div class="retro-col-dest">${destText}</div>
             <div class="retro-col-fare">${item.fare}</div>
             <div class="retro-col-eta">${etaText}</div>
           `;
+          rowBottom.innerHTML = rowHtml;
+          rowTop.innerHTML = rowHtml;
         } else {
-          row.innerHTML = '';
+          rowBottom.innerHTML = '';
+          rowTop.innerHTML = '';
         }
         
-        container.appendChild(row);
+        containerBottom.appendChild(rowBottom);
+        containerTop.appendChild(rowTop);
       }
     }
 
-    /* ================= 點陣階梯步進 17 步跑馬燈演播引擎 (套用半形字粒 Ë ɱ Ɗ) ================= */
+    /* ================= 點陣階梯步進 17 步跑馬燈 (雙層同步渲染) ================= */
     let seqRunning = false;
     let seqTimeout = null;
 
@@ -1012,7 +1047,6 @@
       
       const timeStr = `${hrs}:${mins} ${ampm} ${w}`;
 
-      // 使用新巴藍灣半島班次顯示屏專屬半形字粒：「年 Ë」、「月 ɱ」、「日 Ɗ」
       if (type === 'ZH_1' || type === 'ZH_2') return `${yr}Ë${m + 1}ɱ${d}Ɗ ${timeStr}`;
       if (type === 'EN_FULL') return `${MONTHS_FULL[m]} ${d},${yr} ${timeStr}`;
       if (type === 'EN_SHORT') return `${MONTHS_SHORT[m]} ${d},${yr} ${timeStr}`;
@@ -1099,151 +1133,197 @@
     function stopSequencer() {
       seqRunning = false;
       if (seqTimeout) clearTimeout(seqTimeout);
-      const stage = document.getElementById('retro-marquee-stage');
-      if (stage) stage.innerHTML = '';
+      const stageBottom = document.getElementById('retro-marquee-stage');
+      const stageTop = document.getElementById('retro-marquee-stage-top');
+      if (stageBottom) stageBottom.innerHTML = '';
+      if (stageTop) stageTop.innerHTML = '';
     }
 
     async function runStep() {
       if (!seqRunning) return;
-      const stage = document.getElementById('retro-marquee-stage');
-      if (!stage) return;
+      const stageBottom = document.getElementById('retro-marquee-stage');
+      const stageTop = document.getElementById('retro-marquee-stage-top');
+      if (!stageBottom || !stageTop) return;
 
       const step = SEQUENCE_STEPS[currentStepIdx];
       const textToDisplay = step.dynamic ? getFormattedTime(step.dynamic) : step.text;
 
-      stage.innerHTML = '';
-      const stageW = stage.clientWidth;
+      stageBottom.innerHTML = '';
+      stageTop.innerHTML = '';
+      const stageW = stageBottom.clientWidth;
 
       if (step.outAnim === "splitOut") {
         const mid = Math.floor(textToDisplay.length / 2);
         const leftText = textToDisplay.substring(0, mid);
         const rightText = textToDisplay.substring(mid);
 
-        const wrap = document.createElement('div');
-        wrap.className = 'split-wrapper';
-        wrap.innerHTML = `
+        const wrapBottom = document.createElement('div');
+        wrapBottom.className = 'split-wrapper';
+        wrapBottom.innerHTML = `
           <div class="split-half split-left" style="text-align: right; width: 50%;">${leftText}</div>
           <div class="split-half split-right" style="text-align: left; width: 50%;">${rightText}</div>
         `;
-        stage.appendChild(wrap);
+
+        const wrapTop = document.createElement('div');
+        wrapTop.className = 'split-wrapper';
+        wrapTop.innerHTML = `
+          <div class="split-half split-left" style="text-align: right; width: 50%;">${leftText}</div>
+          <div class="split-half split-right" style="text-align: left; width: 50%;">${rightText}</div>
+        `;
+
+        stageBottom.appendChild(wrapBottom);
+        stageTop.appendChild(wrapTop);
 
         if (step.inAnim === "slideUpIn") {
-          wrap.style.transform = 'translateY(150%)';
-          wrap.style.transition = 'none';
-          void wrap.offsetWidth;
-          wrap.style.transition = 'transform 1.8s steps(12, end)';
-          wrap.style.transform = 'translateY(0%)';
+          [wrapBottom, wrapTop].forEach(w => {
+            w.style.transform = 'translateY(150%)';
+            w.style.transition = 'none';
+            void w.offsetWidth;
+            w.style.transition = 'transform 1.8s steps(12, end)';
+            w.style.transform = 'translateY(0%)';
+          });
           await wait(1850);
         } else if (step.inAnim === "marqueeToTail") {
-          const elW = wrap.scrollWidth;
-          wrap.style.transform = `translateX(${stageW}px)`;
-          wrap.style.transition = 'none';
-          void wrap.offsetWidth;
+          const elW = wrapBottom.scrollWidth;
           const targetX = -(elW - stageW);
           const distance = stageW - targetX;
           const duration = (distance / stageW) * 7.5;
           const stepCount = Math.floor(duration * 12);
-          wrap.style.transition = `transform ${duration}s steps(${stepCount}, end)`;
-          wrap.style.transform = `translateX(${targetX}px)`;
+
+          [wrapBottom, wrapTop].forEach(w => {
+            w.style.transform = `translateX(${stageW}px)`;
+            w.style.transition = 'none';
+            void w.offsetWidth;
+            w.style.transition = `transform ${duration}s steps(${stepCount}, end)`;
+            w.style.transform = `translateX(${targetX}px)`;
+          });
           await wait(duration * 1000);
         }
 
         if (step.hold > 0) await wait(step.hold);
 
-        const leftHalf = wrap.querySelector('.split-left');
-        const rightHalf = wrap.querySelector('.split-right');
-        leftHalf.style.transition = 'transform 1.8s steps(10, end), opacity 1.8s steps(4, end)';
-        rightHalf.style.transition = 'transform 1.8s steps(10, end), opacity 1.8s steps(4, end)';
-        leftHalf.style.transform = 'translateX(-100%)';
-        leftHalf.style.opacity = '0';
-        rightHalf.style.transform = 'translateX(100%)';
-        rightHalf.style.opacity = '0';
+        [wrapBottom, wrapTop].forEach(w => {
+          const leftHalf = w.querySelector('.split-left');
+          const rightHalf = w.querySelector('.split-right');
+          leftHalf.style.transition = 'transform 1.8s steps(10, end), opacity 1.8s steps(4, end)';
+          rightHalf.style.transition = 'transform 1.8s steps(10, end), opacity 1.8s steps(4, end)';
+          leftHalf.style.transform = 'translateX(-100%)';
+          leftHalf.style.opacity = '0';
+          rightHalf.style.transform = 'translateX(100%)';
+          rightHalf.style.opacity = '0';
+        });
         await wait(1850);
 
       } else {
-        const el = document.createElement('div');
-        el.className = 'seq-item';
-        el.innerText = textToDisplay;
-        stage.appendChild(el);
+        const elBottom = document.createElement('div');
+        elBottom.className = 'seq-item';
+        elBottom.innerText = textToDisplay;
 
-        const elW = el.scrollWidth;
+        const elTop = document.createElement('div');
+        elTop.className = 'seq-item';
+        elTop.innerText = textToDisplay;
+
+        stageBottom.appendChild(elBottom);
+        stageTop.appendChild(elTop);
+
+        const elW = elBottom.scrollWidth;
+        const elements = [elBottom, elTop];
 
         if (step.inAnim === "slideRightIn") {
-          el.style.transform = `translateX(-${stageW}px)`;
-          el.style.transition = 'none';
-          void el.offsetWidth;
-          el.style.transition = 'transform 2.2s steps(14, end)';
-          el.style.transform = 'translateX(0px)';
+          elements.forEach(el => {
+            el.style.transform = `translateX(-${stageW}px)`;
+            el.style.transition = 'none';
+            void el.offsetWidth;
+            el.style.transition = 'transform 2.2s steps(14, end)';
+            el.style.transform = 'translateX(0px)';
+          });
           await wait(2250);
         } 
         else if (step.inAnim === "slideDownIn") {
-          el.style.transform = 'translateY(-150%)';
-          el.style.transition = 'none';
-          void el.offsetWidth;
-          el.style.transition = 'transform 1.8s steps(10, end)';
-          el.style.transform = 'translateY(0%)';
+          elements.forEach(el => {
+            el.style.transform = 'translateY(-150%)';
+            el.style.transition = 'none';
+            void el.offsetWidth;
+            el.style.transition = 'transform 1.8s steps(10, end)';
+            el.style.transform = 'translateY(0%)';
+          });
           await wait(1850);
         }
         else if (step.inAnim === "fadeInDown") {
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(-70%)';
-          el.style.transition = 'none';
-          void el.offsetWidth;
-          el.style.transition = 'opacity 2.0s steps(5, end), transform 2.0s steps(10, end)';
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0%)';
+          elements.forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-70%)';
+            el.style.transition = 'none';
+            void el.offsetWidth;
+            el.style.transition = 'opacity 2.0s steps(5, end), transform 2.0s steps(10, end)';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0%)';
+          });
           await wait(2050);
         }
         else if (step.inAnim === "fadeInUp") {
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(70%)';
-          el.style.transition = 'none';
-          void el.offsetWidth;
-          el.style.transition = 'opacity 2.0s steps(5, end), transform 2.0s steps(10, end)';
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0%)';
+          elements.forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(70%)';
+            el.style.transition = 'none';
+            void el.offsetWidth;
+            el.style.transition = 'opacity 2.0s steps(5, end), transform 2.0s steps(10, end)';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0%)';
+          });
           await wait(2050);
         }
         else if (step.inAnim === "fadeInRight") {
-          el.style.opacity = '0';
-          el.style.transform = 'translateX(-40%)';
-          el.style.transition = 'none';
-          void el.offsetWidth;
-          el.style.transition = 'opacity 2.0s steps(5, end), transform 2.0s steps(10, end)';
-          el.style.opacity = '1';
-          el.style.transform = 'translateX(0%)';
+          elements.forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(-40%)';
+            el.style.transition = 'none';
+            void el.offsetWidth;
+            el.style.transition = 'opacity 2.0s steps(5, end), transform 2.0s steps(10, end)';
+            el.style.opacity = '1';
+            el.style.transform = 'translateX(0%)';
+          });
           await wait(2050);
         }
         else if (step.inAnim === "expandYIn") {
-          el.style.transform = 'scaleY(0)';
-          el.style.transition = 'none';
-          void el.offsetWidth;
-          el.style.transition = 'transform 1.8s steps(8, end)';
-          el.style.transform = 'scaleY(1)';
+          elements.forEach(el => {
+            el.style.transform = 'scaleY(0)';
+            el.style.transition = 'none';
+            void el.offsetWidth;
+            el.style.transition = 'transform 1.8s steps(8, end)';
+            el.style.transform = 'scaleY(1)';
+          });
           await wait(1850);
         }
         else if (step.inAnim === "fullMarquee") {
-          el.style.transform = `translateX(${stageW}px)`;
-          el.style.transition = 'none';
-          void el.offsetWidth;
           const distance = stageW + elW;
           const duration = (distance / stageW) * 7.5;
           const stepCount = Math.floor(duration * 12);
-          el.style.transition = `transform ${duration}s steps(${stepCount}, end)`;
-          el.style.transform = `translateX(-${elW}px)`;
+
+          elements.forEach(el => {
+            el.style.transform = `translateX(${stageW}px)`;
+            el.style.transition = 'none';
+            void el.offsetWidth;
+            el.style.transition = `transform ${duration}s steps(${stepCount}, end)`;
+            el.style.transform = `translateX(-${elW}px)`;
+          });
           await wait(duration * 1000);
         }
 
         if (step.hold > 0) await wait(step.hold);
 
         if (step.outAnim === "slideLeftOut") {
-          el.style.transition = 'transform 1.8s steps(12, end)';
-          el.style.transform = `translateX(-${stageW}px)`;
+          elements.forEach(el => {
+            el.style.transition = 'transform 1.8s steps(12, end)';
+            el.style.transform = `translateX(-${stageW}px)`;
+          });
           await wait(1850);
         }
         else if (step.outAnim === "slideUpOut") {
-          el.style.transition = 'transform 1.6s steps(10, end)';
-          el.style.transform = 'translateY(-150%)';
+          elements.forEach(el => {
+            el.style.transition = 'transform 1.6s steps(10, end)';
+            el.style.transform = 'translateY(-150%)';
+          });
           await wait(1650);
         }
       }
