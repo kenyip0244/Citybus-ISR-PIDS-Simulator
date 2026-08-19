@@ -8,7 +8,7 @@
   <!-- 引入備用 Google Fonts 點陣字體與 Roboto -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Roboto:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   
   <style>
     /* 英文及數字 8x16 點陣字體[cite: 1] */
@@ -53,7 +53,7 @@
       --bus-blue: #005bac;
       --text-blue: #002868;
 
-      /* 新巴高亮度發光點陣配色 */
+      /* 新巴高亮度發光點陣配色 (底層發光) */
       --led-amber: #ffcc00;
       --led-amber-glow: 0 0 2px #ffffff, 0 0 6px #ffbb00, 0 0 14px rgba(255, 170, 0, 0.95);
       --led-green: #22ff55;
@@ -61,7 +61,7 @@
       --screen-bg: #000000;
 
       /* 點陣模式標準字型層級宣告 */
-      --retro-font-stack: 'EagleII', 'ET16x15', 'NWS LECIP CHI', 'NWS LECIP CHI V2', 'DotGothic16', monospace, sans-serif;
+      --retro-font-stack: 'EagleII', 'Share Tech Mono', 'ET16x15', 'NWS LECIP CHI', 'NWS LECIP CHI V2', 'DotGothic16', monospace, sans-serif;
     }
 
     * {
@@ -409,7 +409,6 @@
       font-family: var(--retro-font-stack);
     }
 
-    /* 通用點陣層佈局 */
     .led-display-layer {
       position: absolute;
       top: 19.5%;
@@ -421,13 +420,13 @@
       overflow: hidden;
     }
 
-    /* 1. 底層：100% 不透明度文字與 LED 點陣層 (z-index: 1) */
+    /* 1. 底層：100% 亮度點陣文字層 (自帶光暈) */
     #retro-led-display {
       background-color: var(--screen-bg);
       z-index: 1;
     }
 
-    /* 2. 中層：ISR Freq.png 機殼遮罩層 (z-index: 10) */
+    /* 2. 中層：外框機殼遮罩層 */
     #retro-frame-overlay {
       position: absolute;
       top: 0;
@@ -441,7 +440,7 @@
       pointer-events: none;
     }
 
-    /* 3. 頂層：同下層一樣嘅文字，不透明度為 20% (z-index: 20) */
+    /* 3. 頂層：20% 疊加層 (面層唔使發光：完全移除 text-shadow) */
     #retro-led-display-top {
       background-color: transparent;
       z-index: 20;
@@ -449,58 +448,67 @@
       pointer-events: none;
     }
 
+    #retro-led-display-top * {
+      text-shadow: none !important; /* 面層純平無發光 */
+    }
+
     .retro-departures-list {
       flex: 1;
       display: grid;
       grid-template-rows: repeat(4, 1fr);
-      padding: 0.4% 1.0%;
+      padding: 0.2% 0.8%;
     }
 
+    /* 調整欄位寬度與間距，徹底防止食字與切邊 */
     .retro-dep-row {
       display: grid;
-      grid-template-columns: 18% 51% 14% 17%;
+      grid-template-columns: 16% 56% 13% 15%;
       align-items: center;
       color: var(--led-amber);
       text-shadow: var(--led-amber-glow);
       line-height: 1;
+      width: 100%;
     }
 
-    /* 文字加大：路線號碼 */
+    /* 路線號碼：保留安全邊距防左側裁切 */
     .retro-col-route {
-      font-size: 8.0vmin;
+      font-size: 7.8vmin;
       font-family: var(--retro-font-stack);
       text-align: left;
-      padding-left: 1.5%;
-      letter-spacing: 0.05vmin;
+      padding-left: 2.5%;
+      letter-spacing: 0;
+      white-space: nowrap;
     }
 
-    /* 文字加大：目的地 */
+    /* 目的地：充足寬度，完整顯示長站名 */
     .retro-col-dest {
-      font-size: 7.2vmin;
+      font-size: 6.8vmin;
       text-align: left;
       padding-left: 1%;
       white-space: nowrap;
       overflow: hidden;
-      letter-spacing: 0.1vmin;
+      letter-spacing: 0.05vmin;
       font-family: var(--retro-font-stack);
     }
 
-    /* 文字加大：車費 */
+    /* 車費 */
     .retro-col-fare {
-      font-size: 8.0vmin;
+      font-size: 7.8vmin;
       font-family: var(--retro-font-stack);
       text-align: right;
-      padding-right: 25%;
+      padding-right: 20%;
+      white-space: nowrap;
     }
 
-    /* 文字加大：尚餘時間 */
+    /* 尚餘時間 */
     .retro-col-eta {
-      font-size: 8.0vmin;
+      font-size: 7.8vmin;
       font-family: var(--retro-font-stack);
       text-align: right;
-      padding-right: 5%;
+      padding-right: 2%;
       color: var(--led-amber);
       text-shadow: var(--led-amber-glow);
+      white-space: nowrap;
     }
 
     .retro-status-msg {
@@ -515,7 +523,7 @@
       font-family: var(--retro-font-stack);
     }
 
-    /* 綠色 LED 跑馬燈容器 (貼底、極大隻、高亮度發光) */
+    /* 綠色 LED 跑馬燈容器 (貼底、大字、不切字) */
     .retro-bottom-bar {
       height: 25%;
       border-top: none;
@@ -536,14 +544,14 @@
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      font-size: 9.6vmin; /* 跑馬燈極大化 */
+      font-size: 9.0vmin;
       line-height: 1;
-      letter-spacing: 0.8vmin;
+      letter-spacing: 0.5vmin;
       font-family: var(--retro-font-stack);
       white-space: nowrap;
       position: relative;
       overflow: hidden;
-      padding-bottom: 0.2vmin;
+      padding-bottom: 0.4vmin;
     }
 
     .seq-item {
@@ -606,7 +614,7 @@
         <div class="menu-card" onclick="startApp('nwfb2001')">
           <span class="card-tag tag-classic">2001 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
-          <div class="card-desc">實時到站班次與目的地<br>高亮度大字點陣 / 頂層20%疊加層</div>
+          <div class="card-desc">實時到站班次與目的地<br>底層高光發光 / 面層無發光</div>
         </div>
 
         <!-- 新巴 2015 點陣 (暫停服務展示模式) -->
@@ -653,7 +661,7 @@
     <div id="retro-pids">
       <div class="top-nav-back" ondblclick="backToMenu(event)"></div>
       
-      <!-- 1. 底層：100% 不透明度文字與 LED 點陣層 -->
+      <!-- 1. 底層：100% 亮度點陣文字層 (有光暈) -->
       <div id="retro-led-display" class="led-display-layer">
         <div class="retro-departures-list" id="retro-departures-list">
           <div class="retro-status-msg" id="retro-loading-msg">正在載入班次...<br>Loading Live Data...</div>
@@ -666,7 +674,7 @@
       <!-- 2. 中層：外框機殼圖片遮罩層 -->
       <div id="retro-frame-overlay"></div>
 
-      <!-- 3. 頂層：同下層一樣嘅文字，不透明度設定為 20% -->
+      <!-- 3. 頂層：20% 疊加層 (面層無發光) -->
       <div id="retro-led-display-top" class="led-display-layer">
         <div class="retro-departures-list" id="retro-departures-list-top">
           <div class="retro-status-msg" id="retro-loading-msg-top">正在載入班次...<br>Loading Live Data...</div>
@@ -1012,7 +1020,7 @@
       });
     }
 
-    /* ================= 新巴點陣版渲染 (放大字體) ================= */
+    /* ================= 新巴點陣版渲染 ================= */
     function renderRetroPage() {
       const containerBottom = document.getElementById('retro-departures-list');
       const containerTop = document.getElementById('retro-departures-list-top');
@@ -1093,37 +1101,37 @@
       
       const timeStr = `${hrs}:${mins} ${ampm} ${w}`;
 
-      if (type === 'ZH_1' || type === 'ZH_2') return `${yr}Ë${m + 1}ɱ${d}Ɗ ${timeStr}`;
+      if (type === 'ZH_1' || type === 'ZH_2') return `${yr}年${m + 1}月${d}日 ${timeStr}`;
       if (type === 'EN_FULL') return `${MONTHS_FULL[m]} ${d},${yr} ${timeStr}`;
       if (type === 'EN_SHORT') return `${MONTHS_SHORT[m]} ${d},${yr} ${timeStr}`;
-      return `${yr}Ë${m + 1}ɱ${d}Ɗ ${timeStr}`;
+      return `${yr}年${m + 1}月${d}日 ${timeStr}`;
     }
 
     const SEQUENCE_STEPS = [
-      // 1. 新巴全心服務小西灣居民 （向右步進滑動→停止→向左步進滑動消失）
+      // 1. 新巴全心服務小西灣居民
       { text: "新巴全心服務小西灣居民", inAnim: "slideRightIn", hold: 3500, outAnim: "slideLeftOut" },
 
-      // 2. 新巴提供先進候車報站系統 （向右步進滑動→停止→向左步進滑動消失）
+      // 2. 新巴提供先進候車報站系統
       { text: "新巴提供先進候車報站系統", inAnim: "slideRightIn", hold: 4500, outAnim: "slideLeftOut" },
 
-      // 3. 中文日期時間 1 （向上步進滑動→停止→ 左右開門步進擴張消失）
+      // 3. 中文日期時間 1
       { dynamic: 'ZH_1', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 4. 新巴顧客服務電話專線2136 8888 （向下步進滑動→停止→向左步進滑動消失）
+      // 4. 新巴顧客服務電話專線2136 8888
       { text: "新巴顧客服務電話專線2136 8888", inAnim: "slideDownIn", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 5. 英文月份全寫日期時間 （向上步進滑動→停止→ 左右開門步進擴張消失）
+      // 5. 英文月份全寫日期時間
       { dynamic: 'EN_FULL', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 6. 新巴網頁 www.nwfb.com 提供路線搜尋服務 （重複3次，步進滾動至尾段停留→左右開門步進擴張消失）
+      // 6. 新巴網頁 www.nwfb.com.hk 提供路線搜尋服務
       { 
-        text: "新巴網頁 www.nwfb.com 提供路線搜尋服務  新巴網頁 www.nwfb.com 提供路線搜尋服務  新巴網頁 www.nwfb.com 提供路線搜尋服務", 
+        text: "新巴網頁 www.nwfb.com.hk 提供路線搜尋服務  新巴網頁 www.nwfb.com.hk 提供路線搜尋服務  新巴網頁 www.nwfb.com.hk 提供路線搜尋服務", 
         inAnim: "marqueeToTail", 
         hold: 4000, 
         outAnim: "splitOut" 
       },
 
-      // 7. 新巴網頁資訊齊 交通、天氣任你睇 （重複4次，完整右至左步進跑馬燈）
+      // 7. 新巴網頁資訊齊 交通、天氣任你睇
       { 
         text: "新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇", 
         inAnim: "fullMarquee", 
@@ -1131,7 +1139,7 @@
         outAnim: "none" 
       },
 
-      // 8. 專用電子郵箱 bus_ideas@nwfb.com.hk （重複3次，步進滾動至尾段停留→左右開門步進擴張消失）
+      // 8. 專用電子郵箱 bus_ideas@nwfb.com.hk
       { 
         text: "專用電子郵箱 bus_ideas@nwfb.com.hk       專用電子郵箱 bus_ideas@nwfb.com.hk       專用電子郵箱 bus_ideas@nwfb.com.hk", 
         inAnim: "marqueeToTail", 
@@ -1139,31 +1147,31 @@
         outAnim: "splitOut" 
       },
 
-      // 9. 英文月份簡寫日期時間 （向上步進滑動→停止→ 左右開門步進擴張消失）
+      // 9. 英文月份簡寫日期時間
       { dynamic: 'EN_SHORT', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 10. 中文日期時間 2 （向上步進滑動→停止→ 左右開門步進擴張消失）
+      // 10. 中文日期時間 2
       { dynamic: 'ZH_2', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 11. 新巴路線遍港九 隨時歡迎你乘搭 （上至下淡入→停止→向上步進滑出）
+      // 11. 新巴路線遍港九 隨時歡迎你乘搭
       { text: "新巴路線遍港九   隨時歡迎你乘搭", inAnim: "fadeInDown", hold: 4000, outAnim: "slideUpOut" },
 
-      // 12. 歐盟三型環保巴士已投入服務 （下至上淡入→停止→向左步進滑出）
+      // 12. 歐盟三型環保巴士已投入服務
       { text: "歐盟三型環保巴士已投入服務", inAnim: "fadeInUp", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 13. 環保意識高，新巴巴士做得到 （左至右淡入→停止→向左步進滑出）
+      // 13. 環保意識高，新巴巴士做得到
       { text: "環保意識高，新巴巴士做得到", inAnim: "fadeInRight", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 14. 中文日期時間 3 （向上步進滑動→停止→ 左右開門步進擴張消失）
+      // 14. 中文日期時間 3
       { dynamic: 'ZH_2', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 15. 新巴服務：環保、舒適、方便快捷 （上下擴張→停止→向左步進滑出）
+      // 15. 新巴服務：環保、舒適、方便快捷
       { text: "新巴服務：環保、舒適、方便快捷", inAnim: "expandYIn", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 16. 空氣清新資訊最新 新巴服務第一 （左至右淡入→停止→向左步進滑出）
+      // 16. 空氣清新資訊最新 新巴服務第一
       { text: "空氣清新資訊最新   新巴服務第一", inAnim: "fadeInRight", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 17. 睇即時天氣資訊 梗係要搭新巴啦 （上至下淡入→停止→向上步進滑出）
+      // 17. 睇即時天氣資訊 梗係要搭新巴啦
       { text: "睇即時天氣資訊   梗係要搭新巴啦", inAnim: "fadeInDown", hold: 4000, outAnim: "slideUpOut" }
     ];
 
