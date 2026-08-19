@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>小西灣（藍灣半島）巴士總站 PIDS 模擬器</title>
   
-  <!-- 引入本地點陣字體與 Google Fonts Roboto[cite: 1] -->
+  <!-- 引入 Google Fonts DotGothic16 (16點陣中文) 與 Roboto -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
     @font-face {
@@ -28,7 +28,7 @@
       --bus-blue: #005bac;
       --text-blue: #002868;
 
-      /* 新巴點陣版配色 (完美還原影片色系) */
+      /* 新巴點陣版配色 */
       --led-amber: #ffaa00;
       --led-amber-glow: rgba(255, 170, 0, 0.65);
       --led-green: #00ff44;
@@ -381,7 +381,7 @@
       left: 0;
       display: none;
       overflow: hidden;
-      font-family: 'EagleII', 'PingFang HK', monospace;
+      font-family: 'EagleII', 'DotGothic16', monospace, sans-serif;
     }
 
     #retro-led-display {
@@ -427,7 +427,7 @@
       white-space: nowrap;
       overflow: hidden;
       letter-spacing: 0.1vmin;
-      font-family: 'EagleII', 'PingFang HK', monospace;
+      font-family: 'EagleII', 'DotGothic16', monospace;
     }
 
     .retro-col-fare {
@@ -439,7 +439,7 @@
 
     .retro-col-eta {
       font-size: 5.8vmin;
-      font-family: 'EagleII', 'PingFang HK', monospace;
+      font-family: 'EagleII', 'DotGothic16', monospace;
       text-align: right;
       padding-right: 5%;
     }
@@ -464,9 +464,10 @@
       color: var(--led-amber);
       text-shadow: 0 0 8px var(--led-amber-glow);
       text-align: center;
+      font-family: 'EagleII', 'DotGothic16', monospace;
     }
 
-    /* ================= 綠色 LED 跑馬燈容器 ================= */
+    /* ================= 綠色 LED 跑馬燈容器 (無邊框、階梯步進點陣感) ================= */
     .retro-bottom-bar {
       height: 22%;
       border-top: none;
@@ -490,7 +491,7 @@
       font-size: 7.2vmin;
       line-height: 1;
       letter-spacing: 0.8vmin;
-      font-family: 'EagleII', 'PingFang HK', monospace;
+      font-family: 'EagleII', 'DotGothic16', monospace;
       white-space: nowrap;
       position: relative;
       overflow: hidden;
@@ -503,9 +504,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      font-family: 'EagleII', 'DotGothic16', monospace;
     }
 
-    /* 左右開門式消失 (Split Out) 容器 */
     .split-wrapper {
       display: flex;
       width: 100%;
@@ -513,14 +514,15 @@
       align-items: center;
       justify-content: center;
       position: absolute;
+      font-family: 'EagleII', 'DotGothic16', monospace;
     }
 
     .split-half {
       display: inline-block;
       white-space: nowrap;
       overflow: hidden;
-      transition: transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 1.8s ease;
       will-change: transform, opacity;
+      font-family: 'EagleII', 'DotGothic16', monospace;
     }
 
     .top-nav-back {
@@ -555,14 +557,14 @@
         <div class="menu-card" onclick="startApp('nwfb2001')">
           <span class="card-tag tag-classic">2001 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
-          <div class="card-desc">ISR Freq 經典機殼外框<br>全實時 API 與無框大字跑馬燈</div>
+          <div class="card-desc">ISR Freq 機殼 / DotGothic16 點陣<br>全實時 API 與點陣步進跑馬燈</div>
         </div>
 
         <!-- 新巴 2015 點陣 -->
         <div class="menu-card" onclick="startApp('nwfb2015')">
           <span class="card-tag tag-classic">2015 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2015 年實時版)</div>
-          <div class="card-desc">ISR Freq 經典機殼外框<br>全實時 API 與無框大字跑馬燈</div>
+          <div class="card-desc">ISR Freq 機殼 / DotGothic16 點陣<br>全實時 API 與點陣步進跑馬燈</div>
         </div>
       </div>
 
@@ -695,7 +697,7 @@
 
     /* ================= 全網域動態尋址引擎 ================= */
     async function buildIrStopMap() {
-      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V11");
+      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V12");
       if (cached) {
         const map = JSON.parse(cached);
         if (Object.keys(map).length > 5) return map; 
@@ -778,7 +780,7 @@
           }));
         }
 
-        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V11", JSON.stringify(map));
+        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V12", JSON.stringify(map));
         return map;
       } catch (err) {
         console.error("尋址引擎異常:", err);
@@ -956,7 +958,7 @@
       }
     }
 
-    /* ================= 逐格還原 17 步跑馬燈演播引擎 ================= */
+    /* ================= 點陣階梯步進 (Stepped Tick) 17 步跑馬燈演播引擎 ================= */
     let seqRunning = false;
     let seqTimeout = null;
 
@@ -973,14 +975,12 @@
       
       let hrs = now.getHours();
       const mins = String(now.getMinutes()).padStart(2, '0');
-      const ampm = hrs >= 12 ? 'AM' : 'AM'; // 影片 00:18 示範
+      const ampm = hrs >= 12 ? 'PM' : 'AM';
       hrs = hrs % 12;
-      hrs = hrs ? hrs : 9; // 預設 9
-      const realMins = currentMode === 'nwfb2001' ? '42' : mins;
+      hrs = hrs ? hrs : 12;
       
-      const timeStr = `${hrs}:${realMins} ${ampm} ${w}`;
+      const timeStr = `${hrs}:${mins} ${ampm} ${w}`;
 
-      // 影片 00:18 標準格式：2001年7月22日 9:42 AM 星期日
       if (type === 'ZH_1' || type === 'ZH_2') return `${yr}年${m + 1}月${d}日 ${timeStr}`;
       if (type === 'EN_FULL') return `${MONTHS_FULL[m]} ${d},${yr} ${timeStr}`;
       if (type === 'EN_SHORT') return `${MONTHS_SHORT[m]} ${d},${yr} ${timeStr}`;
@@ -988,22 +988,22 @@
     }
 
     const SEQUENCE_STEPS = [
-      // 1. 新巴全心服務小西灣居民 （向右滑動→停止→向左滑動消失）
+      // 1. 新巴全心服務小西灣居民 （向右步進滑動→停止→向左步進滑動消失）
       { text: "新巴全心服務小西灣居民", inAnim: "slideRightIn", hold: 3500, outAnim: "slideLeftOut" },
 
-      // 2. 新巴提供先進候車報站系統 （向右滑動→停止→向左滑動消失 / 00:04-00:15）
+      // 2. 新巴提供先進候車報站系統 （向右步進滑動→停止→向左步進滑動消失）
       { text: "新巴提供先進候車報站系統", inAnim: "slideRightIn", hold: 4500, outAnim: "slideLeftOut" },
 
-      // 3. 中文日期時間 1 （向上滑動→停止→ 向左右開門擴張消失 / 00:17-00:24）
+      // 3. 中文日期時間 1 （向上步進滑動→停止→ 左右開門步進擴張消失）
       { dynamic: 'ZH_1', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 4. 新巴顧客服務電話專線2136 8888 （向下滑動→停止→向左滑動消失 / 00:25）
+      // 4. 新巴顧客服務電話專線2136 8888 （向下步進滑動→停止→向左步進滑動消失）
       { text: "新巴顧客服務電話專線2136 8888", inAnim: "slideDownIn", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 5. 英文月份全寫日期時間 （向上滑動→停止→ 向左右開門擴張消失）
+      // 5. 英文月份全寫日期時間 （向上步進滑動→停止→ 左右開門步進擴張消失）
       { dynamic: 'EN_FULL', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 6. 新巴網頁 www.nwfb.com 提供路線搜尋服務 （重複3次，滾動至尾段停留→向左右開門擴張消失）
+      // 6. 新巴網頁 www.nwfb.com 提供路線搜尋服務 （重複3次，步進滾動至尾段停留→左右開門步進擴張消失）
       { 
         text: "新巴網頁 www.nwfb.com 提供路線搜尋服務  新巴網頁 www.nwfb.com 提供路線搜尋服務  新巴網頁 www.nwfb.com 提供路線搜尋服務", 
         inAnim: "marqueeToTail", 
@@ -1011,7 +1011,7 @@
         outAnim: "splitOut" 
       },
 
-      // 7. 新巴網頁資訊齊 交通、天氣任你睇 （重複4次，完整右至左跑馬燈）
+      // 7. 新巴網頁資訊齊 交通、天氣任你睇 （重複4次，完整右至左步進跑馬燈）
       { 
         text: "新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇", 
         inAnim: "fullMarquee", 
@@ -1019,7 +1019,7 @@
         outAnim: "none" 
       },
 
-      // 8. 專用電子郵箱 bus_ideas@nwfb.com.hk （重複3次，滾動至尾段停留→向左右開門擴張消失）
+      // 8. 專用電子郵箱 bus_ideas@nwfb.com.hk （重複3次，步進滾動至尾段停留→左右開門步進擴張消失）
       { 
         text: "專用電子郵箱 bus_ideas@nwfb.com.hk       專用電子郵箱 bus_ideas@nwfb.com.hk       專用電子郵箱 bus_ideas@nwfb.com.hk", 
         inAnim: "marqueeToTail", 
@@ -1027,31 +1027,31 @@
         outAnim: "splitOut" 
       },
 
-      // 9. 英文月份簡寫日期時間 （向上滑動→停止→ 向左右開門擴張消失）
+      // 9. 英文月份簡寫日期時間 （向上步進滑動→停止→ 左右開門步進擴張消失）
       { dynamic: 'EN_SHORT', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 10. 中文日期時間 2 （向上滑動→停止→ 向左右開門擴張消失）
+      // 10. 中文日期時間 2 （向上步進滑動→停止→ 左右開門步進擴張消失）
       { dynamic: 'ZH_2', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 11. 新巴路線遍港九 隨時歡迎你乘搭 （上至下淡入→停止→向上滑出）
+      // 11. 新巴路線遍港九 隨時歡迎你乘搭 （上至下淡入→停止→向上步進滑出）
       { text: "新巴路線遍港九   隨時歡迎你乘搭", inAnim: "fadeInDown", hold: 4000, outAnim: "slideUpOut" },
 
-      // 12. 歐盟三型環保巴士已投入服務 （下至上淡入→停止→向左滑出）
+      // 12. 歐盟三型環保巴士已投入服務 （下至上淡入→停止→向左步進滑出）
       { text: "歐盟三型環保巴士已投入服務", inAnim: "fadeInUp", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 13. 環保意識高，新巴巴士做得到 （左至右淡入→停止→向左滑出）
+      // 13. 環保意識高，新巴巴士做得到 （左至右淡入→停止→向左步進滑出）
       { text: "環保意識高，新巴巴士做得到", inAnim: "fadeInRight", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 14. 中文日期時間 3 （向上滑動→停止→ 向左右開門擴張消失）
+      // 14. 中文日期時間 3 （向上步進滑動→停止→ 左右開門步進擴張消失）
       { dynamic: 'ZH_2', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 15. 新巴服務：環保、舒適、方便快捷 （上下擴張→停止→向左滑出）
+      // 15. 新巴服務：環保、舒適、方便快捷 （上下擴張→停止→向左步進滑出）
       { text: "新巴服務：環保、舒適、方便快捷", inAnim: "expandYIn", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 16. 空氣清新資訊最新 新巴服務第一 （左至右淡入→停止→向左滑出）
+      // 16. 空氣清新資訊最新 新巴服務第一 （左至右淡入→停止→向左步進滑出）
       { text: "空氣清新資訊最新   新巴服務第一", inAnim: "fadeInRight", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 17. 睇即時天氣資訊 梗係要搭新巴啦 （上至下淡入→停止→向上滑出）
+      // 17. 睇即時天氣資訊 梗係要搭新巴啦 （上至下淡入→停止→向上步進滑出）
       { text: "睇即時天氣資訊   梗係要搭新巴啦", inAnim: "fadeInDown", hold: 4000, outAnim: "slideUpOut" }
     ];
 
@@ -1082,7 +1082,7 @@
       stage.innerHTML = '';
       const stageW = stage.clientWidth;
 
-      // 如果退場是 00:22-00:24 的 splitOut，預先拆分為左右兩半
+      // 左右開門式拉開消失
       if (step.outAnim === "splitOut") {
         const mid = Math.floor(textToDisplay.length / 2);
         const leftText = textToDisplay.substring(0, mid);
@@ -1096,12 +1096,12 @@
         `;
         stage.appendChild(wrap);
 
-        // 向上滑入
+        // 階梯式卡頓向上滑入 (steps: 12 幀)
         if (step.inAnim === "slideUpIn") {
           wrap.style.transform = 'translateY(150%)';
           wrap.style.transition = 'none';
           void wrap.offsetWidth;
-          wrap.style.transition = 'transform 1.8s cubic-bezier(0.1, 0.9, 0.2, 1)';
+          wrap.style.transition = 'transform 1.8s steps(12, end)';
           wrap.style.transform = 'translateY(0%)';
           await wait(1850);
         } else if (step.inAnim === "marqueeToTail") {
@@ -1112,16 +1112,19 @@
           const targetX = -(elW - stageW);
           const distance = stageW - targetX;
           const duration = (distance / stageW) * 7.5;
-          wrap.style.transition = `transform ${duration}s linear`;
+          const stepCount = Math.floor(duration * 12); // 每秒約 12 步頓挫
+          wrap.style.transition = `transform ${duration}s steps(${stepCount}, end)`;
           wrap.style.transform = `translateX(${targetX}px)`;
           await wait(duration * 1000);
         }
 
         if (step.hold > 0) await wait(step.hold);
 
-        // 執行 00:22 - 00:24 左右開門式拉開消失 (Split Out)
+        // 階梯式開門拉開消失 (steps: 10 幀)
         const leftHalf = wrap.querySelector('.split-left');
         const rightHalf = wrap.querySelector('.split-right');
+        leftHalf.style.transition = 'transform 1.8s steps(10, end), opacity 1.8s steps(4, end)';
+        rightHalf.style.transition = 'transform 1.8s steps(10, end), opacity 1.8s steps(4, end)';
         leftHalf.style.transform = 'translateX(-100%)';
         leftHalf.style.opacity = '0';
         rightHalf.style.transform = 'translateX(100%)';
@@ -1138,20 +1141,20 @@
         const elW = el.scrollWidth;
 
         if (step.inAnim === "slideRightIn") {
-          // 00:04 - 00:07 向右推進
+          // 階梯式向右卡頓滑入 (steps: 14 幀)
           el.style.transform = `translateX(-${stageW}px)`;
           el.style.transition = 'none';
           void el.offsetWidth;
-          el.style.transition = 'transform 2.2s cubic-bezier(0.1, 0.9, 0.2, 1)';
+          el.style.transition = 'transform 2.2s steps(14, end)';
           el.style.transform = 'translateX(0px)';
           await wait(2250);
         } 
         else if (step.inAnim === "slideDownIn") {
-          // 00:25 向下推進
+          // 階梯式向下卡頓滑入 (steps: 10 幀)
           el.style.transform = 'translateY(-150%)';
           el.style.transition = 'none';
           void el.offsetWidth;
-          el.style.transition = 'transform 1.8s cubic-bezier(0.1, 0.9, 0.2, 1)';
+          el.style.transition = 'transform 1.8s steps(10, end)';
           el.style.transform = 'translateY(0%)';
           await wait(1850);
         }
@@ -1160,7 +1163,7 @@
           el.style.transform = 'translateY(-70%)';
           el.style.transition = 'none';
           void el.offsetWidth;
-          el.style.transition = 'opacity 2.0s ease, transform 2.0s ease';
+          el.style.transition = 'opacity 2.0s steps(5, end), transform 2.0s steps(10, end)';
           el.style.opacity = '1';
           el.style.transform = 'translateY(0%)';
           await wait(2050);
@@ -1170,7 +1173,7 @@
           el.style.transform = 'translateY(70%)';
           el.style.transition = 'none';
           void el.offsetWidth;
-          el.style.transition = 'opacity 2.0s ease, transform 2.0s ease';
+          el.style.transition = 'opacity 2.0s steps(5, end), transform 2.0s steps(10, end)';
           el.style.opacity = '1';
           el.style.transform = 'translateY(0%)';
           await wait(2050);
@@ -1180,7 +1183,7 @@
           el.style.transform = 'translateX(-40%)';
           el.style.transition = 'none';
           void el.offsetWidth;
-          el.style.transition = 'opacity 2.0s ease, transform 2.0s ease';
+          el.style.transition = 'opacity 2.0s steps(5, end), transform 2.0s steps(10, end)';
           el.style.opacity = '1';
           el.style.transform = 'translateX(0%)';
           await wait(2050);
@@ -1189,31 +1192,33 @@
           el.style.transform = 'scaleY(0)';
           el.style.transition = 'none';
           void el.offsetWidth;
-          el.style.transition = 'transform 1.8s ease-out';
+          el.style.transition = 'transform 1.8s steps(8, end)';
           el.style.transform = 'scaleY(1)';
           await wait(1850);
         }
         else if (step.inAnim === "fullMarquee") {
+          // 完整階梯式頓挫跑馬燈
           el.style.transform = `translateX(${stageW}px)`;
           el.style.transition = 'none';
           void el.offsetWidth;
           const distance = stageW + elW;
           const duration = (distance / stageW) * 7.5;
-          el.style.transition = `transform ${duration}s linear`;
+          const stepCount = Math.floor(duration * 12); // 每秒約 12 步頓挫
+          el.style.transition = `transform ${duration}s steps(${stepCount}, end)`;
           el.style.transform = `translateX(-${elW}px)`;
           await wait(duration * 1000);
         }
 
         if (step.hold > 0) await wait(step.hold);
 
-        // 00:13 - 00:15 向左滑出消失
+        // 階梯式卡頓滑出 (steps: 12 幀)
         if (step.outAnim === "slideLeftOut") {
-          el.style.transition = 'transform 1.8s cubic-bezier(0.7, 0, 0.8, 0.2)';
+          el.style.transition = 'transform 1.8s steps(12, end)';
           el.style.transform = `translateX(-${stageW}px)`;
           await wait(1850);
         }
         else if (step.outAnim === "slideUpOut") {
-          el.style.transition = 'transform 1.6s cubic-bezier(0.7, 0, 0.8, 0.2)';
+          el.style.transition = 'transform 1.6s steps(10, end)';
           el.style.transform = 'translateY(-150%)';
           await wait(1650);
         }
