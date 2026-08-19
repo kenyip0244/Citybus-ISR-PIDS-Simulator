@@ -357,6 +357,18 @@
       100% { transform: translateX(-100%); }
     }
 
+    .status-msg {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      font-size: 2.5vw;
+      color: #002868;
+      font-weight: bold;
+      text-align: center;
+      padding: 0 20px;
+    }
+
     /* ================= 模式 2 & 3：新巴 經典點陣版 ================= */
     #retro-pids {
       width: 100%;
@@ -443,10 +455,21 @@
       100% { opacity: 0.3; }
     }
 
-    /* ================= 綠色 LED 巨幅慢速動態排程容器 ================= */
+    .retro-status-msg {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      font-size: 3.5vmin;
+      color: var(--led-amber);
+      text-shadow: 0 0 8px var(--led-amber-glow);
+      text-align: center;
+    }
+
+    /* ================= 綠色 LED 跑馬燈容器 (無綠色框線，純黑底) ================= */
     .retro-bottom-bar {
       height: 22%;
-      border-top: 0.2vmin solid #113311;
+      border-top: none; /* 移除綠色邊框 */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -454,7 +477,7 @@
       color: var(--led-green);
       text-shadow: 0 0 8px var(--led-green-glow);
       overflow: hidden;
-      background: #000c04;
+      background: transparent; /* 融入底層黑色 */
       position: relative;
     }
 
@@ -464,7 +487,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      /* 字體極大化、大行距與大字距 */
       font-size: 7.2vmin;
       line-height: 1;
       letter-spacing: 0.8vmin;
@@ -512,18 +534,18 @@
         <div class="menu-card" onclick="startApp('nwfb2001')">
           <span class="card-tag tag-classic">2001 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
-          <div class="card-desc">ISR Freq 經典機殼外框<br>大字慢速 17 步跑馬燈</div>
+          <div class="card-desc">ISR Freq 經典機殼外框<br>全實時 API 與無框大字跑馬燈</div>
         </div>
 
         <!-- 新巴 2015 點陣 -->
         <div class="menu-card" onclick="startApp('nwfb2015')">
           <span class="card-tag tag-classic">2015 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2015 年實時版)</div>
-          <div class="card-desc">ISR Freq 經典機殼外框<br>大字慢速 17 步跑馬燈</div>
+          <div class="card-desc">ISR Freq 經典機殼外框<br>全實時 API 與無框大字跑馬燈</div>
         </div>
       </div>
 
-      <button class="btn-clear-cache" onclick="clearCacheAndReload(event)">⟳ 清除系統快取 Clear Cache</button>
+      <button class="btn-clear-cache" onclick="clearCacheAndReload(event)">⟳ 清除全城巴站位快取 Clear Cache</button>
       <div style="font-size: 1.1vmin; color: #777; margin-top: 1.5vmin;">* 雙擊畫面頂部可隨時返回此主選單</div>
     </div>
 
@@ -544,7 +566,9 @@
         </div>
       </div>
 
-      <div class="route-list" id="routeList"></div>
+      <div class="route-list" id="routeList">
+        <div class="status-msg" id="loadingMsg">正在啟動系統...<br>System Initializing...</div>
+      </div>
 
       <div class="ticker-bar">
         <div class="ticker-content" id="tickerText">
@@ -557,9 +581,11 @@
     <div id="retro-pids">
       <div class="top-nav-back" ondblclick="backToMenu(event)"></div>
       <div id="retro-led-display">
-        <div class="retro-departures-list" id="retro-departures-list"></div>
+        <div class="retro-departures-list" id="retro-departures-list">
+          <div class="retro-status-msg" id="retro-loading-msg">正在載入實時班次...<br>Loading Live Data...</div>
+        </div>
         
-        <!-- 綠色底部顯示欄 (巨幅大字慢速演播舞台) -->
+        <!-- 綠色底部顯示欄 (無邊框) -->
         <div class="retro-bottom-bar">
           <div id="retro-marquee-stage"></div>
         </div>
@@ -574,62 +600,44 @@
     const CITYFLYER_LOGO_SRC = "./Cityflyer_logo.svg";
     const GPS_LOGO_SRC = "./GPS.svg";
 
-    const IR_MASTER_ROUTES = [
-      { route: "106", destZh: "黃大仙", destEn: "Wong Tai Sin", fare: "9.4", defaultMins: 6 },
-      { route: "8", destZh: "灣仔碼頭", destEn: "Wan Chai Ferry Pier", fare: "4.3", defaultMins: 4 },
-      { route: "84M", destZh: "柴灣地鐵站", destEn: "Chai Wan Station", fare: "3.4", defaultMins: 8 },
-      { route: "8P", destZh: "灣仔碼頭", destEn: "Wan Chai Ferry Pier", fare: "5.8", defaultMins: 1 },
-      { route: "82", destZh: "北角碼頭", destEn: "North Point Ferry Pier", fare: "5.3", defaultMins: 5 },
-      { route: "82X", destZh: "鰂魚涌", destEn: "Quarry Bay", fare: "5.6", defaultMins: 9 },
-      { route: "85", destZh: "寶馬山", destEn: "Braemar Hill", fare: "4.7", defaultMins: 12 },
-      { route: "118", destZh: "長沙灣(深旺道)", destEn: "Cheung Sha Wan", fare: "11.4", defaultMins: 7 },
-      { route: "606", destZh: "彩雲(豐盛街)", destEn: "Choi Wan", fare: "12.1", defaultMins: 15 },
-      { route: "606X", destZh: "九龍灣", destEn: "Kowloon Bay", fare: "12.1", defaultMins: 18 },
-      { route: "682", destZh: "馬鞍山(烏溪沙站)", destEn: "Wu Kai Sha Station", fare: "22.0", defaultMins: 11 },
-      { route: "694", destZh: "調景嶺站", destEn: "Tiu Keng Leng Stn", fare: "17.4", defaultMins: 14 },
-      { route: "788", destZh: "中環(港澳碼頭)", destEn: "Macau Ferry", fare: "8.2", defaultMins: 3 },
-      { route: "789", destZh: "金鐘(樂禮街)", destEn: "Admiralty", fare: "8.2", defaultMins: 8 },
-      { route: "A12", destZh: "機場(地面運輸中心)", destEn: "Airport", fare: "47.1", defaultMins: 20 },
-      { route: "NA12", destZh: "港珠澳大橋香港口岸", destEn: "HZMB HK Port", fare: "60.7", defaultMins: 25 },
-      { route: "N8P", destZh: "灣仔(港灣道)", destEn: "Wan Chai", fare: "9.4", defaultMins: 30 },
-      { route: "N118", destZh: "長沙灣(深旺道)", destEn: "Cheung Sha Wan", fare: "17.5", defaultMins: 35 }
-    ];
+    // 票價快速對應表 (純數字格式)
+    const FARE_MAP = {
+      "8": "6.1", "8P": "6.1", "8X": "6.7", "82": "5.3", "82X": "5.6",
+      "85": "4.7", "85P": "7.0", "106": "12.1", "106P": "12.1", "118": "11.4",
+      "118P": "11.4", "606": "12.1", "606X": "12.1", "682": "22.0", "694": "17.4",
+      "694S": "17.4", "788": "8.2", "789": "8.2", "A12": "47.1", "NA12": "60.7",
+      "N8": "9.4", "N8P": "9.4", "N8X": "9.4", "N118": "17.5"
+    };
 
     let currentMode = null;
     let activeDepartures = [];
     let currentPage = 0;
     let isFetching = false;
-    let routeStopMap = {};
+    let routeStopMap = null;
 
     let retroIsEnglish = false;
     let refreshTimer = null;
     let pageTimer = null;
     let retroLangTimer = null;
 
+    function toTitleCase(str) {
+      return str.replace(/\w\S*/g, function(txt){
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      });
+    }
+
     function startApp(mode) {
       currentMode = mode;
       document.getElementById('menu-container').style.display = 'none';
       currentPage = 0;
 
-      activeDepartures = IR_MASTER_ROUTES.map(r => ({
-        route: r.route,
-        destZh: r.destZh,
-        destEn: r.destEn,
-        fare: r.fare,
-        mins: r.defaultMins,
-        hasGpsIcon: ["770", "8H", "NA12"].includes(r.route),
-        isFlyer: r.route.startsWith("A") || r.route.startsWith("NA")
-      }));
-
       if (mode === 'modern') {
         document.getElementById('modern-pids').style.display = 'flex';
         document.getElementById('retro-pids').style.display = 'none';
-        renderModernPage();
       } else {
         document.getElementById('modern-pids').style.display = 'none';
         document.getElementById('retro-pids').style.display = 'block';
 
-        renderRetroPage();
         retroLangTimer = setInterval(() => {
           retroIsEnglish = !retroIsEnglish;
           renderRetroPage();
@@ -638,9 +646,11 @@
         startSequencer();
       }
 
+      // 與現代版完全相同的全實時 API 載入引擎
       fetchLiveIrETAs();
       refreshTimer = setInterval(fetchLiveIrETAs, 15000);
 
+      // 每 10 秒翻頁輪播
       pageTimer = setInterval(() => {
         if (activeDepartures.length > PAGE_SIZE) {
           currentPage++;
@@ -665,67 +675,164 @@
       document.getElementById('menu-container').style.display = 'flex';
     }
 
-    /* ================= 實時 API 抓取引擎 ================= */
+    /* ================= 與現代版完全一致的全網域動態尋址引擎 ================= */
+    async function buildIrStopMap() {
+      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V10");
+      if (cached) {
+        const map = JSON.parse(cached);
+        if (Object.keys(map).length > 5) return map; 
+      }
+
+      const msgDiv = document.getElementById("loadingMsg");
+      const retroMsgDiv = document.getElementById("retro-loading-msg");
+      const loadText = "正在搜尋藍灣半島所有實時路線...<br>Discovering Live Routes...";
+      if (msgDiv) msgDiv.innerHTML = loadText;
+      if (retroMsgDiv) retroMsgDiv.innerHTML = loadText;
+
+      const map = {};
+      const irStopIds = new Set(); 
+
+      try {
+        const routeRes = await fetch(`${API_BASE}/route/CTB`);
+        const routeJson = await routeRes.json();
+        const routesData = routeJson.data || [];
+        const allRoutes = routesData.map(r => r.route);
+
+        const irExplicitRoutes = routesData
+          .filter(r => r.orig_tc.includes("藍灣") || r.dest_tc.includes("藍灣"))
+          .map(r => r.route);
+
+        for (let route of irExplicitRoutes) {
+          let found = false;
+          for (let dir of ["outbound", "inbound"]) {
+            if (found) break;
+            try {
+              const rsRes = await fetch(`${API_BASE}/route-stop/CTB/${route}/${dir}`);
+              if (!rsRes.ok) continue;
+              const rsJson = await rsRes.json();
+              const stops = rsJson.data || [];
+
+              const indices = [0, 1, 2, stops.length - 1, stops.length - 2, stops.length - 3];
+              for (let i of indices) {
+                if (!stops[i]) continue;
+                let sid = stops[i].stop;
+                
+                if (irStopIds.has(sid)) {
+                  map[route] = sid;
+                  found = true;
+                  break;
+                }
+                
+                const sRes = await fetch(`${API_BASE}/stop/${sid}`);
+                const sJson = await sRes.json();
+                const sName = sJson.data?.name_tc || "";
+                if (sName.includes("藍灣半島") || sName.includes("Island Resort")) {
+                  irStopIds.add(sid);
+                  map[route] = sid;
+                  found = true;
+                  break;
+                }
+              }
+            } catch(e) {}
+          }
+        }
+
+        const remainingRoutes = allRoutes.filter(r => !map[r]);
+        const CHUNK_SIZE = 15; 
+        for (let i = 0; i < remainingRoutes.length; i += CHUNK_SIZE) {
+          const chunk = remainingRoutes.slice(i, i + CHUNK_SIZE);
+          await Promise.all(chunk.map(async (route) => {
+            for (let dir of ["outbound", "inbound"]) {
+              if (map[route]) break;
+              try {
+                const rsRes = await fetch(`${API_BASE}/route-stop/CTB/${route}/${dir}`);
+                if (!rsRes.ok) continue;
+                const rsJson = await rsRes.json();
+                const stops = rsJson.data || [];
+                for (let s of stops) {
+                  if (irStopIds.has(s.stop)) {
+                    map[route] = s.stop;
+                    break;
+                  }
+                }
+              } catch(e) {}
+            }
+          }));
+        }
+
+        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V10", JSON.stringify(map));
+        return map;
+      } catch (err) {
+        console.error("尋址引擎異常:", err);
+        return { "8P": "001147", "788": "001147", "118": "001147", "82": "001147" }; 
+      }
+    }
+
+    /* ================= 實時 API 班次獲取 ================= */
     async function fetchLiveIrETAs() {
       if (isFetching) return;
       isFetching = true;
 
       try {
-        if (Object.keys(routeStopMap).length === 0) {
-          await Promise.all(IR_MASTER_ROUTES.map(async (r) => {
-            try {
-              const res = await fetch(`${API_BASE}/route-stop/CTB/${r.route}/outbound`);
-              if (res.ok) {
-                const json = await res.json();
-                if (json.data && json.data.length > 0) {
-                  routeStopMap[r.route] = json.data[0].stop;
-                }
-              }
-            } catch(e) {}
-          }));
+        if (!routeStopMap) {
+          routeStopMap = await buildIrStopMap();
         }
 
-        const liveResults = [];
+        const results = [];
+        const discoveredRoutes = Object.keys(routeStopMap);
 
-        for (const r of IR_MASTER_ROUTES) {
-          let mins = r.defaultMins;
-          let hasGps = false;
-          const stopId = routeStopMap[r.route] || "001147";
+        for (const route of discoveredRoutes) {
+          const stopId = routeStopMap[route];
+          if (!stopId) continue;
 
           try {
-            const res = await fetch(`${API_BASE}/eta/CTB/${stopId}/${r.route}`);
+            const res = await fetch(`${API_BASE}/eta/CTB/${stopId}/${route}`);
             if (res.ok) {
               const json = await res.json();
               const list = json.data || [];
-              const baseTime = json.data_timestamp ? new Date(json.data_timestamp) : new Date();
+              const baseTimestamp = json.data_timestamp ? new Date(json.data_timestamp) : new Date();
+
+              let earliest = null;
 
               for (const item of list) {
                 if (!item.eta) continue;
-                const diffMs = new Date(item.eta).getTime() - baseTime.getTime();
+
+                const destZhRaw = (item.dest_tc || "").trim();
+                const destEnRaw = (item.dest_en || "").trim();
+
+                const isInbound = destZhRaw.includes("藍灣") || destEnRaw.toUpperCase().includes("ISLAND RESORT");
+                if (isInbound) continue;
+
+                const etaTime = new Date(item.eta);
+                const diffMs = etaTime.getTime() - baseTimestamp.getTime();
                 const diffMins = Math.ceil(diffMs / 60000);
 
                 if (diffMins >= 0) {
-                  mins = diffMins;
-                  const allowedGps = ["770", "8H", "NA12"];
-                  hasGps = allowedGps.includes(r.route) && (diffMins <= 3);
-                  break;
+                  const allowedGpsRoutes = ["770", "8H", "NA12"];
+                  const hasGpsIcon = allowedGpsRoutes.includes(route) && (diffMins <= 3);
+                  const fareText = FARE_MAP[route] || "6.1";
+
+                  if (!earliest || diffMins < earliest.mins) {
+                    earliest = {
+                      route: route,
+                      isFlyer: route.startsWith("A") || route.startsWith("NA"),
+                      mins: diffMins,
+                      hasGpsIcon: hasGpsIcon,
+                      fare: fareText,
+                      destZh: destZhRaw.replace(/^往\s*/, "") || "市區",
+                      destEn: destEnRaw.replace(/^to\s*/i, "") || "Urban Area"
+                    };
+                  }
                 }
               }
+              if (earliest) results.push(earliest);
             }
-          } catch(e) {}
+          } catch (e) {}
 
-          liveResults.push({
-            route: r.route,
-            destZh: r.destZh,
-            destEn: r.destEn,
-            fare: r.fare,
-            mins: mins,
-            hasGpsIcon: hasGps,
-            isFlyer: r.route.startsWith("A") || r.route.startsWith("NA")
-          });
+          await new Promise(r => setTimeout(r, 45));
         }
 
-        activeDepartures = liveResults.sort((a, b) => a.mins - b.mins);
+        activeDepartures = results.sort((a, b) => a.mins - b.mins);
 
         if (currentMode === 'modern') {
           renderModernPage();
@@ -734,7 +841,7 @@
         }
 
       } catch (err) {
-        console.error("API 獲取錯誤:", err);
+        console.error("API 總體查詢異常:", err);
       } finally {
         isFetching = false;
       }
@@ -743,8 +850,12 @@
     /* ================= 現代版渲染 ================= */
     function renderModernPage() {
       const container = document.getElementById("routeList");
-      container.innerHTML = "";
+      if (activeDepartures.length === 0) {
+        container.innerHTML = `<div class="status-msg">現時段暫無即將開出的班次<br>No Active Departures Currently</div>`;
+        return;
+      }
 
+      container.innerHTML = "";
       const totalPages = Math.ceil(activeDepartures.length / PAGE_SIZE);
       const startIndex = (currentPage % totalPages) * PAGE_SIZE;
       const currentItems = activeDepartures.slice(startIndex, startIndex + PAGE_SIZE);
@@ -784,11 +895,16 @@
       });
     }
 
-    /* ================= 新巴點陣版渲染 ================= */
+    /* ================= 新巴點陣版渲染 (即時載入 + 10 秒翻頁) ================= */
     function renderRetroPage() {
       const container = document.getElementById('retro-departures-list');
-      container.innerHTML = '';
+      
+      if (activeDepartures.length === 0) {
+        container.innerHTML = `<div class="retro-status-msg">現時段暫無班次<br>NO DEPARTURES</div>`;
+        return;
+      }
 
+      container.innerHTML = '';
       const totalPages = Math.ceil(activeDepartures.length / PAGE_SIZE);
       const startIndex = (currentPage % totalPages) * PAGE_SIZE;
       const currentItems = activeDepartures.slice(startIndex, startIndex + PAGE_SIZE);
@@ -799,7 +915,7 @@
 
         if (i < currentItems.length) {
           const item = currentItems[i];
-          const destText = retroIsEnglish ? item.destEn : item.destZh;
+          const destText = retroIsEnglish ? toTitleCase(item.destEn) : item.destZh;
           
           let etaText = '';
           if (item.mins <= 0) {
@@ -843,7 +959,6 @@
       hrs = hrs % 12;
       hrs = hrs ? hrs : 12;
       
-      // 超寬大空格格式
       const timeStr = `${hrs}:${mins}  ${ampm}    ${w}`;
 
       if (type === 'ZH_1') return `${yr}年 ${m + 1}月 ${String(d).padStart(2, '0')}日      ${timeStr}`;
@@ -853,7 +968,6 @@
       return `${yr}年 ${m + 1}月 ${d}日    ${timeStr}`;
     }
 
-    // 慢速 17 步動畫排程
     const SEQUENCE_STEPS = [
       // 1. 新巴全心服務小西灣居民 （向右慢速滑動→停留→向左慢速滑動消失）
       { text: "新巴全心服務小西灣居民", inAnim: "slideRightIn", hold: 4500, outAnim: "slideLeftOut" },
@@ -955,7 +1069,7 @@
       const stageW = stage.clientWidth;
       const elW = el.scrollWidth;
 
-      // 慢速進場動畫 (In Animation: 2.0s - 2.5s)
+      // 慢速進場動畫
       if (step.inAnim === "slideRightIn") {
         el.style.transform = `translateX(-${stageW}px)`;
         el.style.transition = 'none';
@@ -1019,21 +1133,19 @@
         await wait(1850);
       }
       else if (step.inAnim === "marqueeToTail") {
-        // 右至左極慢速滾動到最後停留在尾段
         el.style.transform = `translateX(${stageW}px)`;
         el.style.transition = 'none';
         void el.offsetWidth;
 
         const targetX = -(elW - stageW);
         const distance = stageW - targetX;
-        const duration = (distance / stageW) * 8.5; // 超慢速點陣滾動
+        const duration = (distance / stageW) * 8.5;
 
         el.style.transition = `transform ${duration}s linear`;
         el.style.transform = `translateX(${targetX}px)`;
         await wait(duration * 1000);
       }
       else if (step.inAnim === "fullMarquee") {
-        // 完整慢速滾動通過整個畫面
         el.style.transform = `translateX(${stageW}px)`;
         el.style.transition = 'none';
         void el.offsetWidth;
@@ -1046,12 +1158,12 @@
         await wait(duration * 1000);
       }
 
-      // 停留展示 (Hold)
+      // 停留展示
       if (step.hold > 0) {
         await wait(step.hold);
       }
 
-      // 慢速退場動畫 (Out Animation: 1.8s - 2.2s)
+      // 慢速退場動畫
       if (step.outAnim === "slideLeftOut") {
         el.style.transition = 'transform 1.8s cubic-bezier(0.7, 0, 0.8, 0.2)';
         el.style.transform = `translateX(-${stageW}px)`;
@@ -1069,7 +1181,6 @@
         await wait(1650);
       }
 
-      // 步驟完成，進入下一步（循環往復）
       currentStepIdx = (currentStepIdx + 1) % SEQUENCE_STEPS.length;
       seqTimeout = setTimeout(runStep, 150);
     }
