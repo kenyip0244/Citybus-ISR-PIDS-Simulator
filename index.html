@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>藍灣半島總站 PIDS 模擬器 (Siu Sai Wan Island Resort PIDS Simulator)</title>
+  <title>小西灣（藍灣半島）巴士總站 PIDS 模擬器</title>
   
-  <!-- 引入本地點陣字體與 Roboto -->
+  <!-- 引入本地點陣字體與 Google Fonts Roboto -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -31,6 +31,8 @@
       /* 新巴點陣版配色 */
       --led-amber: #ff9900;
       --led-amber-glow: rgba(255, 153, 0, 0.7);
+      --led-green: #00ff66;
+      --led-green-glow: rgba(0, 255, 102, 0.7);
       --led-red: #ff3300;
       --screen-bg: #000000;
     }
@@ -53,7 +55,6 @@
       font-family: "Arial", "PingFang HK", "Microsoft JhengHei", "Heiti TC", sans-serif;
     }
 
-    /* 16:9 智慧等比縮放畫布 */
     #app-wrapper {
       width: 100%;
       height: 100%;
@@ -367,7 +368,7 @@
       padding: 0 20px;
     }
 
-    /* ================= 模式 2 & 3：新巴 2001 / 2015 經典點陣版 ================= */
+    /* ================= 模式 2 & 3：新巴 經典點陣版 (全實時 API) ================= */
     #retro-pids {
       width: 100%;
       height: 100%;
@@ -453,24 +454,37 @@
       100% { opacity: 0.3; }
     }
 
+    .retro-status-msg {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      font-size: 3.5vmin;
+      color: var(--led-amber);
+      text-shadow: 0 0 8px var(--led-amber-glow);
+      text-align: center;
+    }
+
+    /* 底部綠色 LED 跑馬燈與輪播時間 */
     .retro-bottom-bar {
       height: 18%;
-      border-top: 0.2vmin solid #2a1a00;
+      border-top: 0.2vmin solid #113311;
       display: flex;
       align-items: center;
+      justify-content: center;
       padding: 0 1.5%;
-      color: var(--led-amber);
-      text-shadow: 0 0 6px var(--led-amber-glow);
+      color: var(--led-green);
+      text-shadow: 0 0 8px var(--led-green-glow);
       overflow: hidden;
-      background: #050301;
+      background: #000c04;
+      position: relative;
     }
 
     .retro-marquee-container {
-      flex: 1;
+      width: 100%;
       overflow: hidden;
       white-space: nowrap;
-      position: relative;
-      font-size: 3vmin;
+      font-size: 3.2vmin;
       font-family: 'EagleII', 'PingFang HK', monospace;
     }
 
@@ -478,7 +492,7 @@
       display: inline-block;
       white-space: nowrap;
       padding-left: 100%;
-      animation: retro-marquee 25s linear infinite;
+      animation: retro-marquee 22s linear infinite;
     }
 
     @keyframes retro-marquee {
@@ -486,17 +500,15 @@
       100% { transform: translate(-100%, 0); }
     }
 
-    .retro-clock-display {
-      margin-left: 1.5vmin;
-      padding-left: 1.5vmin;
-      border-left: 0.2vmin solid #3a2200;
-      font-size: 3vmin;
+    .retro-time-overlay {
+      display: none;
+      font-size: 3.2vmin;
       font-family: 'EagleII', 'PingFang HK', monospace;
-      white-space: nowrap;
-      text-align: right;
+      text-align: center;
+      width: 100%;
+      letter-spacing: 0.15vmin;
     }
 
-    /* 頂部隱形返回選單觸發區域 */
     .top-nav-back {
       position: absolute;
       top: 0;
@@ -525,18 +537,18 @@
           <div class="card-desc">藍底 LCD 顯示屏<br>實時到站時間與機場快線圖示</div>
         </div>
 
-        <!-- 新巴 2001 經典版 -->
+        <!-- 新巴 2001 經典點陣 (實時 API) -->
         <div class="menu-card" onclick="startApp('nwfb2001')">
-          <span class="card-tag tag-classic">2001 經典</span>
-          <div class="card-title">新巴 點陣 LED<br>(2001 年經典版)</div>
-          <div class="card-desc">ISR Freq 經典機殼外框<br>8×16 橙黃點陣字體與雙語輪播</div>
+          <span class="card-tag tag-classic">2001 實時</span>
+          <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
+          <div class="card-desc">ISR Freq 經典機殼外框<br>全實時 API 連線與十秒翻頁</div>
         </div>
 
-        <!-- 新巴 2015 後期版 -->
+        <!-- 新巴 2015 點陣 (實時 API) -->
         <div class="menu-card" onclick="startApp('nwfb2015')">
-          <span class="card-tag tag-classic">2015 後期</span>
-          <div class="card-title">新巴 點陣 LED<br>(2015 年後期版)</div>
-          <div class="card-desc">ISR Freq 經典機殼外框<br>後期行車路線及票價設定</div>
+          <span class="card-tag tag-classic">2015 實時</span>
+          <div class="card-title">新巴 點陣 LED<br>(2015 年實時版)</div>
+          <div class="card-desc">ISR Freq 經典機殼外框<br>全實時 API 連線與綠色輪播跑馬燈</div>
         </div>
       </div>
 
@@ -572,16 +584,20 @@
       </div>
     </div>
 
-    <!-- ================= 模式 2 & 3：新巴 2001 / 2015 經典點陣版 ================= -->
+    <!-- ================= 模式 2 & 3：新巴 經典點陣版 (全實時 API) ================= -->
     <div id="retro-pids">
       <div class="top-nav-back" ondblclick="backToMenu(event)"></div>
       <div id="retro-led-display">
-        <div class="retro-departures-list" id="retro-departures-list"></div>
+        <div class="retro-departures-list" id="retro-departures-list">
+          <div class="retro-status-msg" id="retro-loading-msg">正在載入實時班次資料...<br>Loading Live Data...</div>
+        </div>
+        
+        <!-- 綠色底部顯示欄 (跑馬燈與時鐘輪流切換) -->
         <div class="retro-bottom-bar">
-          <div class="retro-marquee-container">
+          <div class="retro-marquee-container" id="retro-marquee-box">
             <div class="retro-marquee-content" id="retro-marquee-text"></div>
           </div>
-          <div class="retro-clock-display" id="retro-live-clock"></div>
+          <div class="retro-time-overlay" id="retro-time-display"></div>
         </div>
       </div>
     </div>
@@ -594,111 +610,104 @@
     const CITYFLYER_LOGO_SRC = "./Cityflyer_logo.svg";
     const GPS_LOGO_SRC = "./GPS.svg";
 
-    // 經典版排班預設
-    const SCHEDULE_DATA_2001 = [
-      { route: "106", dest_tc: "黃大仙", dest_en: "WONG TAI SIN", fare: "$9.4", mins: 3 },
-      { route: "8", dest_tc: "灣仔碼頭", dest_en: "WAN CHAI FERRY", fare: "$5.4", mins: 7 },
-      { route: "84M", dest_tc: "柴灣地鐵站", dest_en: "CHAI WAN MTR", fare: "$3.0", mins: 12 },
-      { route: "8P", dest_tc: "灣仔碼頭", dest_en: "WAN CHAI FERRY", fare: "$5.4", mins: 16 }
-    ];
-
-    const SCHEDULE_DATA_2015 = [
-      { route: "106", dest_tc: "黃大仙", dest_en: "WONG TAI SIN", fare: "$9.8", mins: 2 },
-      { route: "8", dest_tc: "灣仔北", dest_en: "WAN CHAI NORTH", fare: "$6.1", mins: 6 },
-      { route: "8P", dest_tc: "會展站", dest_en: "EXHIBITION CENTRE", fare: "$6.1", mins: 11 },
-      { route: "82X", dest_tc: "鰂魚涌", dest_en: "QUARRY BAY", fare: "$5.6", mins: 18 }
-    ];
+    // 票價後備資料表
+    const FARE_FALLBACK = {
+      "8": "$6.1", "8P": "$6.1", "8X": "$6.7", "82": "$5.3", "82X": "$5.6",
+      "85": "$4.7", "85P": "$7.0", "106": "$12.1", "106P": "$12.1", "118": "$11.4",
+      "118P": "$11.4", "606": "$12.1", "606X": "$12.1", "682": "$22.0", "694": "$17.4",
+      "694S": "$17.4", "788": "$8.2", "789": "$8.2", "A12": "$47.1", "NA12": "$60.7",
+      "N8": "$9.4", "N8P": "$9.4", "N8X": "$9.4", "N118": "$17.5"
+    };
 
     let currentMode = null;
     let activeDepartures = [];
     let currentPage = 0;
     let isFetching = false;
     let routeStopMap = null;
+    let routeFareMap = {};
 
-    // 經典版計時器
+    // 輪播計時器
     let retroIsEnglish = false;
-    let retroRoutesData = [];
-    let modernRefreshTimer = null;
-    let modernPageTimer = null;
+    let refreshTimer = null;
+    let pageTimer = null;
     let retroLangTimer = null;
-    let retroCountdownTimer = null;
-    let retroClockTimer = null;
+    let retroBottomCycleTimer = null;
 
     function startApp(mode) {
       currentMode = mode;
       document.getElementById('menu-container').style.display = 'none';
 
+      currentPage = 0;
+
       if (mode === 'modern') {
         document.getElementById('modern-pids').style.display = 'flex';
         document.getElementById('retro-pids').style.display = 'none';
-        
-        fetchLiveIrETAs();
-        modernRefreshTimer = setInterval(fetchLiveIrETAs, 15000);
-        modernPageTimer = setInterval(() => {
-          if (activeDepartures.length > PAGE_SIZE) {
-            currentPage++;
-            renderPage();
-          }
-        }, 10000);
       } else {
         document.getElementById('modern-pids').style.display = 'none';
         document.getElementById('retro-pids').style.display = 'block';
 
         const marquee = document.getElementById('retro-marquee-text');
         if (mode === 'nwfb2001') {
-          retroRoutesData = JSON.parse(JSON.stringify(SCHEDULE_DATA_2001));
           marquee.innerHTML = "歡迎乘坐新世界第一巴士 ★ 顧客服務熱線: 2136 8888 ★ 網址: www.nwfb.com.hk ★ 新巴服務 日日進步 ★ 歐盟三型環保巴士投入服務 ★";
         } else {
-          retroRoutesData = JSON.parse(JSON.stringify(SCHEDULE_DATA_2015));
           marquee.innerHTML = "歡迎乘搭新巴網絡 ★ 新巴城巴 App 實時抵站時間已全面開通 ★ 顧客服務熱線: 2136 8888 ★ www.nwfb.com.hk ★";
         }
 
-        renderRetroRows();
+        // 啟動綠色跑馬燈與時鐘輪播
+        startRetroBottomCycle();
+
+        // 啟動目的地中英輪播 (每 3.5 秒)
         retroLangTimer = setInterval(() => {
           retroIsEnglish = !retroIsEnglish;
-          renderRetroRows();
+          renderRetroPage();
         }, 3500);
-
-        retroCountdownTimer = setInterval(() => {
-          retroRoutesData.forEach(item => {
-            item.mins--;
-            if (item.mins < 1) {
-              item.mins = Math.floor(Math.random() * 12) + 8;
-            }
-          });
-          renderRetroRows();
-        }, 60000);
-
-        updateRetroClock();
-        retroClockTimer = setInterval(updateRetroClock, 1000);
       }
+
+      // 啟動實時 API 抓取
+      fetchLiveIrETAs();
+      refreshTimer = setInterval(fetchLiveIrETAs, 15000);
+
+      // 每 10 秒固定翻頁輪播所有路線
+      pageTimer = setInterval(() => {
+        if (activeDepartures.length > PAGE_SIZE) {
+          currentPage++;
+          if (currentMode === 'modern') {
+            renderModernPage();
+          } else {
+            renderRetroPage();
+          }
+        }
+      }, 10000);
     }
 
     function backToMenu(e) {
       if (e) e.stopPropagation();
-      clearInterval(modernRefreshTimer);
-      clearInterval(modernPageTimer);
+      clearInterval(refreshTimer);
+      clearInterval(pageTimer);
       clearInterval(retroLangTimer);
-      clearInterval(retroCountdownTimer);
-      clearInterval(retroClockTimer);
+      clearTimeout(retroBottomCycleTimer);
 
       document.getElementById('modern-pids').style.display = 'none';
       document.getElementById('retro-pids').style.display = 'none';
       document.getElementById('menu-container').style.display = 'flex';
     }
 
-    /* ================= 現代版邏輯 ================= */
+    /* ================= 全網域自動尋址與票價引擎 ================= */
     async function buildIrStopMap() {
-      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V8");
+      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V9");
       if (cached) {
-        const map = JSON.parse(cached);
-        if (Object.keys(map).length > 5) return map; 
+        const parsed = JSON.parse(cached);
+        if (parsed.routes && Object.keys(parsed.routes).length > 5) {
+          routeFareMap = parsed.fares || {};
+          return parsed.routes;
+        }
       }
 
       const msgDiv = document.getElementById("loadingMsg");
-      if (msgDiv) msgDiv.innerHTML = "系統首次初始化：正在全網域自動搜尋途經『藍灣半島』之所有路線...<br>Auto-discovering routes from API...";
+      if (msgDiv) msgDiv.innerHTML = "系統首次初始化：正在全網域自動搜尋途經『藍灣半島』之所有路線 (約需 5-10 秒)...<br>Auto-discovering routes from API...";
 
       const map = {};
+      const fares = {};
       const irStopIds = new Set(); 
 
       try {
@@ -769,7 +778,8 @@
           }));
         }
 
-        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V8", JSON.stringify(map));
+        routeFareMap = fares;
+        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V9", JSON.stringify({ routes: map, fares }));
         return map;
       } catch (err) {
         console.error("尋址引擎異常:", err);
@@ -777,6 +787,7 @@
       }
     }
 
+    /* ================= 實時 API 班次獲取 ================= */
     async function fetchLiveIrETAs() {
       if (isFetching) return;
       isFetching = true;
@@ -819,12 +830,15 @@
                   const allowedGpsRoutes = ["770", "8H", "NA12"];
                   const hasGpsIcon = allowedGpsRoutes.includes(route) && (diffMins <= 3);
 
+                  const fare = FARE_FALLBACK[route] || "$6.1";
+
                   if (!earliest || diffMins < earliest.mins) {
                     earliest = {
                       route: route,
                       isFlyer: route.startsWith("A") || route.startsWith("NA"),
                       mins: diffMins,
                       hasGpsIcon: hasGpsIcon,
+                      fare: fare,
                       destZh: destZhRaw.replace(/^往\s*/, "") || "市區",
                       destEn: destEnRaw.replace(/^to\s*/i, "") || "Urban Area"
                     };
@@ -835,11 +849,17 @@
             }
           } catch (e) {}
 
-          await new Promise(r => setTimeout(r, 60));
+          await new Promise(r => setTimeout(r, 45));
         }
 
+        // 依尚餘時間或路線編號排序
         activeDepartures = results.sort((a, b) => a.mins - b.mins);
-        renderPage();
+
+        if (currentMode === 'modern') {
+          renderModernPage();
+        } else {
+          renderRetroPage();
+        }
 
       } catch (err) {
         console.error("API 總體查詢異常:", err);
@@ -848,7 +868,8 @@
       }
     }
 
-    function renderPage() {
+    /* ================= 現代版渲染 ================= */
+    function renderModernPage() {
       const container = document.getElementById("routeList");
       if (activeDepartures.length === 0) {
         container.innerHTML = `<div class="status-msg">現時段暫無即將開出的班次<br>No Active Departures Currently</div>`;
@@ -895,16 +916,25 @@
       });
     }
 
-    /* ================= 經典點陣版邏輯 ================= */
-    function renderRetroRows() {
+    /* ================= 新巴點陣版渲染 (實時資料 + 10 秒翻頁) ================= */
+    function renderRetroPage() {
       const container = document.getElementById('retro-departures-list');
-      container.innerHTML = '';
+      
+      if (activeDepartures.length === 0) {
+        container.innerHTML = `<div class="retro-status-msg">現時段暫無班次<br>NO DEPARTURES</div>`;
+        return;
+      }
 
-      retroRoutesData.forEach(item => {
+      container.innerHTML = '';
+      const totalPages = Math.ceil(activeDepartures.length / PAGE_SIZE);
+      const startIndex = (currentPage % totalPages) * PAGE_SIZE;
+      const currentItems = activeDepartures.slice(startIndex, startIndex + PAGE_SIZE);
+
+      currentItems.forEach(item => {
         const row = document.createElement('div');
         row.className = 'retro-dep-row';
 
-        const destText = retroIsEnglish ? item.dest_en : item.dest_tc;
+        const destText = retroIsEnglish ? item.destEn : item.destZh;
         let etaText = '';
         if (item.mins <= 1) {
           etaText = `<span class="retro-eta-arriving">${retroIsEnglish ? 'ARRIVING' : '即將開出'}</span>`;
@@ -922,17 +952,35 @@
       });
     }
 
-    function updateRetroClock() {
-      const now = new Date();
-      const year = currentMode === 'nwfb2001' ? 2001 : now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const date = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
+    // 綠色底部欄輪播機制 (跑馬燈播 22 秒 -> 顯示時鐘 6 秒 -> 循環)
+    function startRetroBottomCycle() {
+      const marqueeBox = document.getElementById('retro-marquee-box');
+      const timeDisplay = document.getElementById('retro-time-display');
 
-      document.getElementById('retro-live-clock').innerText = 
-        `${year}年${month}月${date}日 ${hours}:${minutes}:${seconds}`;
+      function showMarquee() {
+        timeDisplay.style.display = 'none';
+        marqueeBox.style.display = 'block';
+        retroBottomCycleTimer = setTimeout(showTime, 22000);
+      }
+
+      function showTime() {
+        const now = new Date();
+        const year = currentMode === 'nwfb2001' ? 2001 : now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const date = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+
+        timeDisplay.innerText = `${year}年${month}月${date}日 ${hours}:${minutes}:${seconds}`;
+        
+        marqueeBox.style.display = 'none';
+        timeDisplay.style.display = 'block';
+
+        retroBottomCycleTimer = setTimeout(showMarquee, 6000);
+      }
+
+      showMarquee();
     }
 
     function toggleFullScreen() {
@@ -946,7 +994,7 @@
     function clearCacheAndReload(e) {
       if (e) e.stopPropagation();
       if (confirm("即將清除全城巴站位快取並重新載入，確定嗎？")) {
-        localStorage.removeItem("CTB_IR_DYNAMIC_ROUTES_V8");
+        localStorage.removeItem("CTB_IR_DYNAMIC_ROUTES_V9");
         location.reload();
       }
     }
