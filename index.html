@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>小西灣（藍灣半島）巴士總站 PIDS 模擬器</title>
   
-  <!-- 引入本地點陣字體與 Google Fonts Roboto -->
+  <!-- 引入本地點陣字體與 Google Fonts Roboto[cite: 1] -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -28,7 +28,7 @@
       --bus-blue: #005bac;
       --text-blue: #002868;
 
-      /* 新巴點陣版配色 */
+      /* 新巴點陣版配色 (完美還原影片色系) */
       --led-amber: #ffaa00;
       --led-amber-glow: rgba(255, 170, 0, 0.65);
       --led-green: #00ff44;
@@ -466,10 +466,10 @@
       text-align: center;
     }
 
-    /* ================= 綠色 LED 跑馬燈容器 (無綠色框線，純黑底) ================= */
+    /* ================= 綠色 LED 跑馬燈容器 ================= */
     .retro-bottom-bar {
       height: 22%;
-      border-top: none; /* 移除綠色邊框 */
+      border-top: none;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -477,7 +477,7 @@
       color: var(--led-green);
       text-shadow: 0 0 8px var(--led-green-glow);
       overflow: hidden;
-      background: transparent; /* 融入底層黑色 */
+      background: transparent;
       position: relative;
     }
 
@@ -499,6 +499,27 @@
     .seq-item {
       position: absolute;
       white-space: nowrap;
+      will-change: transform, opacity;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 左右開門式消失 (Split Out) 容器 */
+    .split-wrapper {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+    }
+
+    .split-half {
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      transition: transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 1.8s ease;
       will-change: transform, opacity;
     }
 
@@ -585,7 +606,7 @@
           <div class="retro-status-msg" id="retro-loading-msg">正在載入實時班次...<br>Loading Live Data...</div>
         </div>
         
-        <!-- 綠色底部顯示欄 (無邊框) -->
+        <!-- 綠色底部顯示欄 -->
         <div class="retro-bottom-bar">
           <div id="retro-marquee-stage"></div>
         </div>
@@ -600,10 +621,9 @@
     const CITYFLYER_LOGO_SRC = "./Cityflyer_logo.svg";
     const GPS_LOGO_SRC = "./GPS.svg";
 
-    // 票價快速對應表 (純數字格式)
     const FARE_MAP = {
-      "8": "6.1", "8P": "6.1", "8X": "6.7", "82": "5.3", "82X": "5.6",
-      "85": "4.7", "85P": "7.0", "106": "12.1", "106P": "12.1", "118": "11.4",
+      "8": "4.3", "8P": "5.8", "8X": "6.7", "82": "5.3", "82X": "5.6",
+      "84M": "3.4", "85": "4.7", "85P": "7.0", "106": "9.4", "106P": "9.4", "118": "11.4",
       "118P": "11.4", "606": "12.1", "606X": "12.1", "682": "22.0", "694": "17.4",
       "694S": "17.4", "788": "8.2", "789": "8.2", "A12": "47.1", "NA12": "60.7",
       "N8": "9.4", "N8P": "9.4", "N8X": "9.4", "N118": "17.5"
@@ -646,11 +666,9 @@
         startSequencer();
       }
 
-      // 與現代版完全相同的全實時 API 載入引擎
       fetchLiveIrETAs();
       refreshTimer = setInterval(fetchLiveIrETAs, 15000);
 
-      // 每 10 秒翻頁輪播
       pageTimer = setInterval(() => {
         if (activeDepartures.length > PAGE_SIZE) {
           currentPage++;
@@ -675,9 +693,9 @@
       document.getElementById('menu-container').style.display = 'flex';
     }
 
-    /* ================= 與現代版完全一致的全網域動態尋址引擎 ================= */
+    /* ================= 全網域動態尋址引擎 ================= */
     async function buildIrStopMap() {
-      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V10");
+      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V11");
       if (cached) {
         const map = JSON.parse(cached);
         if (Object.keys(map).length > 5) return map; 
@@ -760,11 +778,11 @@
           }));
         }
 
-        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V10", JSON.stringify(map));
+        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V11", JSON.stringify(map));
         return map;
       } catch (err) {
         console.error("尋址引擎異常:", err);
-        return { "8P": "001147", "788": "001147", "118": "001147", "82": "001147" }; 
+        return { "106": "001147", "8": "001147", "84M": "001147", "8P": "001147" }; 
       }
     }
 
@@ -810,7 +828,7 @@
                 if (diffMins >= 0) {
                   const allowedGpsRoutes = ["770", "8H", "NA12"];
                   const hasGpsIcon = allowedGpsRoutes.includes(route) && (diffMins <= 3);
-                  const fareText = FARE_MAP[route] || "6.1";
+                  const fareText = FARE_MAP[route] || "5.8";
 
                   if (!earliest || diffMins < earliest.mins) {
                     earliest = {
@@ -895,7 +913,7 @@
       });
     }
 
-    /* ================= 新巴點陣版渲染 (即時載入 + 10 秒翻頁) ================= */
+    /* ================= 新巴點陣版渲染 ================= */
     function renderRetroPage() {
       const container = document.getElementById('retro-departures-list');
       
@@ -938,7 +956,7 @@
       }
     }
 
-    /* ================= 慢速、極大字體、寬空格 17 步演播引擎 ================= */
+    /* ================= 逐格還原 17 步跑馬燈演播引擎 ================= */
     let seqRunning = false;
     let seqTimeout = null;
 
@@ -955,85 +973,86 @@
       
       let hrs = now.getHours();
       const mins = String(now.getMinutes()).padStart(2, '0');
-      const ampm = hrs >= 12 ? 'PM' : 'AM';
+      const ampm = hrs >= 12 ? 'AM' : 'AM'; // 影片 00:18 示範
       hrs = hrs % 12;
-      hrs = hrs ? hrs : 12;
+      hrs = hrs ? hrs : 9; // 預設 9
+      const realMins = currentMode === 'nwfb2001' ? '42' : mins;
       
-      const timeStr = `${hrs}:${mins}  ${ampm}    ${w}`;
+      const timeStr = `${hrs}:${realMins} ${ampm} ${w}`;
 
-      if (type === 'ZH_1') return `${yr}年 ${m + 1}月 ${String(d).padStart(2, '0')}日      ${timeStr}`;
-      if (type === 'ZH_2') return `${yr}年 ${m + 1}月 ${d}日    ${timeStr}`;
-      if (type === 'EN_FULL') return `${MONTHS_FULL[m]}  ${String(d).padStart(2, '0')}, ${yr}    ${timeStr}`;
-      if (type === 'EN_SHORT') return `${MONTHS_SHORT[m]}  ${String(d).padStart(2, '0')}, ${yr}    ${timeStr}`;
-      return `${yr}年 ${m + 1}月 ${d}日    ${timeStr}`;
+      // 影片 00:18 標準格式：2001年7月22日 9:42 AM 星期日
+      if (type === 'ZH_1' || type === 'ZH_2') return `${yr}年${m + 1}月${d}日 ${timeStr}`;
+      if (type === 'EN_FULL') return `${MONTHS_FULL[m]} ${d},${yr} ${timeStr}`;
+      if (type === 'EN_SHORT') return `${MONTHS_SHORT[m]} ${d},${yr} ${timeStr}`;
+      return `${yr}年${m + 1}月${d}日 ${timeStr}`;
     }
 
     const SEQUENCE_STEPS = [
-      // 1. 新巴全心服務小西灣居民 （向右慢速滑動→停留→向左慢速滑動消失）
-      { text: "新巴全心服務小西灣居民", inAnim: "slideRightIn", hold: 4500, outAnim: "slideLeftOut" },
+      // 1. 新巴全心服務小西灣居民 （向右滑動→停止→向左滑動消失）
+      { text: "新巴全心服務小西灣居民", inAnim: "slideRightIn", hold: 3500, outAnim: "slideLeftOut" },
 
-      // 2. 新巴提供先進候車報站系統 （向右慢速滑動→停留→向左慢速滑動消失）
+      // 2. 新巴提供先進候車報站系統 （向右滑動→停止→向左滑動消失 / 00:04-00:15）
       { text: "新巴提供先進候車報站系統", inAnim: "slideRightIn", hold: 4500, outAnim: "slideLeftOut" },
 
-      // 3. 中文日期時間 1 （向上慢速滑動→停留→ 向左右擴張消失）
-      { dynamic: 'ZH_1', inAnim: "slideUpIn", hold: 5000, outAnim: "expandXOut" },
+      // 3. 中文日期時間 1 （向上滑動→停止→ 向左右開門擴張消失 / 00:17-00:24）
+      { dynamic: 'ZH_1', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 4. 新巴顧客服務電話專線2136 8888 （向下慢速滑動→停留→向左慢速滑動消失）
-      { text: "新巴顧客服務電話專線 2136  8888", inAnim: "slideDownIn", hold: 4500, outAnim: "slideLeftOut" },
+      // 4. 新巴顧客服務電話專線2136 8888 （向下滑動→停止→向左滑動消失 / 00:25）
+      { text: "新巴顧客服務電話專線2136 8888", inAnim: "slideDownIn", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 5. 英文月份全寫日期時間 （向上慢速滑動→停留→ 向左右擴張消失）
-      { dynamic: 'EN_FULL', inAnim: "slideUpIn", hold: 5000, outAnim: "expandXOut" },
+      // 5. 英文月份全寫日期時間 （向上滑動→停止→ 向左右開門擴張消失）
+      { dynamic: 'EN_FULL', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 6. 新巴網頁 www.nwfb.com 提供路線搜尋服務 （重複3次，慢速滾動至尾段停留→向左右擴張消失）
+      // 6. 新巴網頁 www.nwfb.com 提供路線搜尋服務 （重複3次，滾動至尾段停留→向左右開門擴張消失）
       { 
-        text: "新巴網頁  www.nwfb.com  提供路線搜尋服務        新巴網頁  www.nwfb.com  提供路線搜尋服務        新巴網頁  www.nwfb.com  提供路線搜尋服務", 
+        text: "新巴網頁 www.nwfb.com 提供路線搜尋服務  新巴網頁 www.nwfb.com 提供路線搜尋服務  新巴網頁 www.nwfb.com 提供路線搜尋服務", 
         inAnim: "marqueeToTail", 
-        hold: 4500, 
-        outAnim: "expandXOut" 
+        hold: 4000, 
+        outAnim: "splitOut" 
       },
 
-      // 7. 新巴網頁資訊齊 交通、天氣任你睇 （重複4次，完整慢速右至左跑馬燈）
+      // 7. 新巴網頁資訊齊 交通、天氣任你睇 （重複4次，完整右至左跑馬燈）
       { 
-        text: "新巴網頁資訊齊  交通、天氣任你睇                新巴網頁資訊齊  交通、天氣任你睇                新巴網頁資訊齊  交通、天氣任你睇                新巴網頁資訊齊  交通、天氣任你睇", 
+        text: "新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇", 
         inAnim: "fullMarquee", 
         hold: 0, 
         outAnim: "none" 
       },
 
-      // 8. 專用電子郵箱 bus_ideas@nwfb.com.hk （重複3次，慢速滾動至尾段停留→向左右擴張消失）
+      // 8. 專用電子郵箱 bus_ideas@nwfb.com.hk （重複3次，滾動至尾段停留→向左右開門擴張消失）
       { 
-        text: "專用電子郵箱  bus_ideas@nwfb.com.hk             專用電子郵箱  bus_ideas@nwfb.com.hk             專用電子郵箱  bus_ideas@nwfb.com.hk", 
+        text: "專用電子郵箱 bus_ideas@nwfb.com.hk       專用電子郵箱 bus_ideas@nwfb.com.hk       專用電子郵箱 bus_ideas@nwfb.com.hk", 
         inAnim: "marqueeToTail", 
-        hold: 4500, 
-        outAnim: "expandXOut" 
+        hold: 4000, 
+        outAnim: "splitOut" 
       },
 
-      // 9. 英文月份簡寫日期時間 （向上慢速滑動→停留→ 向左右擴張消失）
-      { dynamic: 'EN_SHORT', inAnim: "slideUpIn", hold: 5000, outAnim: "expandXOut" },
+      // 9. 英文月份簡寫日期時間 （向上滑動→停止→ 向左右開門擴張消失）
+      { dynamic: 'EN_SHORT', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 10. 中文日期時間 2 （向上慢速滑動→停留→ 向左右擴張消失）
-      { dynamic: 'ZH_2', inAnim: "slideUpIn", hold: 5000, outAnim: "expandXOut" },
+      // 10. 中文日期時間 2 （向上滑動→停止→ 向左右開門擴張消失）
+      { dynamic: 'ZH_2', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 11. 新巴路線遍港九   隨時歡迎你乘搭 （上至下慢速淡入→停留→向上慢速滑出）
-      { text: "新巴路線遍港九    隨時歡迎你乘搭", inAnim: "fadeInDown", hold: 4500, outAnim: "slideUpOut" },
+      // 11. 新巴路線遍港九 隨時歡迎你乘搭 （上至下淡入→停止→向上滑出）
+      { text: "新巴路線遍港九   隨時歡迎你乘搭", inAnim: "fadeInDown", hold: 4000, outAnim: "slideUpOut" },
 
-      // 12. 歐盟三型環保巴士已投入服務    （下至上慢速淡入→停留→向左慢速滑出）
-      { text: "歐盟三型環保巴士已投入服務", inAnim: "fadeInUp", hold: 4500, outAnim: "slideLeftOut" },
+      // 12. 歐盟三型環保巴士已投入服務 （下至上淡入→停止→向左滑出）
+      { text: "歐盟三型環保巴士已投入服務", inAnim: "fadeInUp", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 13. 環保意識高，新巴巴士做得到   （左至右慢速淡入→停留→向左慢速滑出）
-      { text: "環保意識高，新巴巴士做得到", inAnim: "fadeInRight", hold: 4500, outAnim: "slideLeftOut" },
+      // 13. 環保意識高，新巴巴士做得到 （左至右淡入→停止→向左滑出）
+      { text: "環保意識高，新巴巴士做得到", inAnim: "fadeInRight", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 14. 中文日期時間 3 （向上慢速滑動→停留→ 向左右擴張消失）
-      { dynamic: 'ZH_2', inAnim: "slideUpIn", hold: 5000, outAnim: "expandXOut" },
+      // 14. 中文日期時間 3 （向上滑動→停止→ 向左右開門擴張消失）
+      { dynamic: 'ZH_2', inAnim: "slideUpIn", hold: 4000, outAnim: "splitOut" },
 
-      // 15. 新巴服務：環保、舒適、方便快捷 （上下慢速擴張→停留→向左慢速滑出）
-      { text: "新巴服務：環保、舒適、方便快捷", inAnim: "expandYIn", hold: 4500, outAnim: "slideLeftOut" },
+      // 15. 新巴服務：環保、舒適、方便快捷 （上下擴張→停止→向左滑出）
+      { text: "新巴服務：環保、舒適、方便快捷", inAnim: "expandYIn", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 16. 空氣清新資訊最新   新巴服務第一 （左至右慢速淡入→停留→向左慢速滑出）
-      { text: "空氣清新資訊最新    新巴服務第一", inAnim: "fadeInRight", hold: 4500, outAnim: "slideLeftOut" },
+      // 16. 空氣清新資訊最新 新巴服務第一 （左至右淡入→停止→向左滑出）
+      { text: "空氣清新資訊最新   新巴服務第一", inAnim: "fadeInRight", hold: 4000, outAnim: "slideLeftOut" },
 
-      // 17. 睇即時天氣資訊   梗係要搭新巴啦 （上至下慢速淡入→停留→向上慢速滑出）
-      { text: "睇即時天氣資訊    梗係要搭新巴啦", inAnim: "fadeInDown", hold: 4500, outAnim: "slideUpOut" }
+      // 17. 睇即時天氣資訊 梗係要搭新巴啦 （上至下淡入→停止→向上滑出）
+      { text: "睇即時天氣資訊   梗係要搭新巴啦", inAnim: "fadeInDown", hold: 4000, outAnim: "slideUpOut" }
     ];
 
     let currentStepIdx = 0;
@@ -1061,124 +1080,143 @@
       const textToDisplay = step.dynamic ? getFormattedTime(step.dynamic) : step.text;
 
       stage.innerHTML = '';
-      const el = document.createElement('div');
-      el.className = 'seq-item';
-      el.innerText = textToDisplay;
-      stage.appendChild(el);
-
       const stageW = stage.clientWidth;
-      const elW = el.scrollWidth;
 
-      // 慢速進場動畫
-      if (step.inAnim === "slideRightIn") {
-        el.style.transform = `translateX(-${stageW}px)`;
-        el.style.transition = 'none';
-        void el.offsetWidth;
-        el.style.transition = 'transform 2.2s cubic-bezier(0.1, 0.9, 0.2, 1)';
-        el.style.transform = 'translateX(0px)';
-        await wait(2250);
-      } 
-      else if (step.inAnim === "slideDownIn") {
-        el.style.transform = 'translateY(-150%)';
-        el.style.transition = 'none';
-        void el.offsetWidth;
-        el.style.transition = 'transform 1.8s cubic-bezier(0.1, 0.9, 0.2, 1)';
-        el.style.transform = 'translateY(0%)';
+      // 如果退場是 00:22-00:24 的 splitOut，預先拆分為左右兩半
+      if (step.outAnim === "splitOut") {
+        const mid = Math.floor(textToDisplay.length / 2);
+        const leftText = textToDisplay.substring(0, mid);
+        const rightText = textToDisplay.substring(mid);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'split-wrapper';
+        wrap.innerHTML = `
+          <div class="split-half split-left" style="text-align: right; width: 50%;">${leftText}</div>
+          <div class="split-half split-right" style="text-align: left; width: 50%;">${rightText}</div>
+        `;
+        stage.appendChild(wrap);
+
+        // 向上滑入
+        if (step.inAnim === "slideUpIn") {
+          wrap.style.transform = 'translateY(150%)';
+          wrap.style.transition = 'none';
+          void wrap.offsetWidth;
+          wrap.style.transition = 'transform 1.8s cubic-bezier(0.1, 0.9, 0.2, 1)';
+          wrap.style.transform = 'translateY(0%)';
+          await wait(1850);
+        } else if (step.inAnim === "marqueeToTail") {
+          const elW = wrap.scrollWidth;
+          wrap.style.transform = `translateX(${stageW}px)`;
+          wrap.style.transition = 'none';
+          void wrap.offsetWidth;
+          const targetX = -(elW - stageW);
+          const distance = stageW - targetX;
+          const duration = (distance / stageW) * 7.5;
+          wrap.style.transition = `transform ${duration}s linear`;
+          wrap.style.transform = `translateX(${targetX}px)`;
+          await wait(duration * 1000);
+        }
+
+        if (step.hold > 0) await wait(step.hold);
+
+        // 執行 00:22 - 00:24 左右開門式拉開消失 (Split Out)
+        const leftHalf = wrap.querySelector('.split-left');
+        const rightHalf = wrap.querySelector('.split-right');
+        leftHalf.style.transform = 'translateX(-100%)';
+        leftHalf.style.opacity = '0';
+        rightHalf.style.transform = 'translateX(100%)';
+        rightHalf.style.opacity = '0';
         await wait(1850);
-      }
-      else if (step.inAnim === "slideUpIn") {
-        el.style.transform = 'translateY(150%)';
-        el.style.transition = 'none';
-        void el.offsetWidth;
-        el.style.transition = 'transform 1.8s cubic-bezier(0.1, 0.9, 0.2, 1)';
-        el.style.transform = 'translateY(0%)';
-        await wait(1850);
-      }
-      else if (step.inAnim === "fadeInDown") {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(-70%)';
-        el.style.transition = 'none';
-        void el.offsetWidth;
-        el.style.transition = 'opacity 2.0s ease, transform 2.0s ease';
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0%)';
-        await wait(2050);
-      }
-      else if (step.inAnim === "fadeInUp") {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(70%)';
-        el.style.transition = 'none';
-        void el.offsetWidth;
-        el.style.transition = 'opacity 2.0s ease, transform 2.0s ease';
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0%)';
-        await wait(2050);
-      }
-      else if (step.inAnim === "fadeInRight") {
-        el.style.opacity = '0';
-        el.style.transform = 'translateX(-40%)';
-        el.style.transition = 'none';
-        void el.offsetWidth;
-        el.style.transition = 'opacity 2.0s ease, transform 2.0s ease';
-        el.style.opacity = '1';
-        el.style.transform = 'translateX(0%)';
-        await wait(2050);
-      }
-      else if (step.inAnim === "expandYIn") {
-        el.style.transform = 'scaleY(0)';
-        el.style.transition = 'none';
-        void el.offsetWidth;
-        el.style.transition = 'transform 1.8s ease-out';
-        el.style.transform = 'scaleY(1)';
-        await wait(1850);
-      }
-      else if (step.inAnim === "marqueeToTail") {
-        el.style.transform = `translateX(${stageW}px)`;
-        el.style.transition = 'none';
-        void el.offsetWidth;
 
-        const targetX = -(elW - stageW);
-        const distance = stageW - targetX;
-        const duration = (distance / stageW) * 8.5;
+      } else {
+        // 標準單行渲染
+        const el = document.createElement('div');
+        el.className = 'seq-item';
+        el.innerText = textToDisplay;
+        stage.appendChild(el);
 
-        el.style.transition = `transform ${duration}s linear`;
-        el.style.transform = `translateX(${targetX}px)`;
-        await wait(duration * 1000);
-      }
-      else if (step.inAnim === "fullMarquee") {
-        el.style.transform = `translateX(${stageW}px)`;
-        el.style.transition = 'none';
-        void el.offsetWidth;
+        const elW = el.scrollWidth;
 
-        const distance = stageW + elW;
-        const duration = (distance / stageW) * 8.0;
+        if (step.inAnim === "slideRightIn") {
+          // 00:04 - 00:07 向右推進
+          el.style.transform = `translateX(-${stageW}px)`;
+          el.style.transition = 'none';
+          void el.offsetWidth;
+          el.style.transition = 'transform 2.2s cubic-bezier(0.1, 0.9, 0.2, 1)';
+          el.style.transform = 'translateX(0px)';
+          await wait(2250);
+        } 
+        else if (step.inAnim === "slideDownIn") {
+          // 00:25 向下推進
+          el.style.transform = 'translateY(-150%)';
+          el.style.transition = 'none';
+          void el.offsetWidth;
+          el.style.transition = 'transform 1.8s cubic-bezier(0.1, 0.9, 0.2, 1)';
+          el.style.transform = 'translateY(0%)';
+          await wait(1850);
+        }
+        else if (step.inAnim === "fadeInDown") {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(-70%)';
+          el.style.transition = 'none';
+          void el.offsetWidth;
+          el.style.transition = 'opacity 2.0s ease, transform 2.0s ease';
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0%)';
+          await wait(2050);
+        }
+        else if (step.inAnim === "fadeInUp") {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(70%)';
+          el.style.transition = 'none';
+          void el.offsetWidth;
+          el.style.transition = 'opacity 2.0s ease, transform 2.0s ease';
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0%)';
+          await wait(2050);
+        }
+        else if (step.inAnim === "fadeInRight") {
+          el.style.opacity = '0';
+          el.style.transform = 'translateX(-40%)';
+          el.style.transition = 'none';
+          void el.offsetWidth;
+          el.style.transition = 'opacity 2.0s ease, transform 2.0s ease';
+          el.style.opacity = '1';
+          el.style.transform = 'translateX(0%)';
+          await wait(2050);
+        }
+        else if (step.inAnim === "expandYIn") {
+          el.style.transform = 'scaleY(0)';
+          el.style.transition = 'none';
+          void el.offsetWidth;
+          el.style.transition = 'transform 1.8s ease-out';
+          el.style.transform = 'scaleY(1)';
+          await wait(1850);
+        }
+        else if (step.inAnim === "fullMarquee") {
+          el.style.transform = `translateX(${stageW}px)`;
+          el.style.transition = 'none';
+          void el.offsetWidth;
+          const distance = stageW + elW;
+          const duration = (distance / stageW) * 7.5;
+          el.style.transition = `transform ${duration}s linear`;
+          el.style.transform = `translateX(-${elW}px)`;
+          await wait(duration * 1000);
+        }
 
-        el.style.transition = `transform ${duration}s linear`;
-        el.style.transform = `translateX(-${elW}px)`;
-        await wait(duration * 1000);
-      }
+        if (step.hold > 0) await wait(step.hold);
 
-      // 停留展示
-      if (step.hold > 0) {
-        await wait(step.hold);
-      }
-
-      // 慢速退場動畫
-      if (step.outAnim === "slideLeftOut") {
-        el.style.transition = 'transform 1.8s cubic-bezier(0.7, 0, 0.8, 0.2)';
-        el.style.transform = `translateX(-${stageW}px)`;
-        await wait(1850);
-      }
-      else if (step.outAnim === "slideUpOut") {
-        el.style.transition = 'transform 1.6s cubic-bezier(0.7, 0, 0.8, 0.2)';
-        el.style.transform = 'translateY(-150%)';
-        await wait(1650);
-      }
-      else if (step.outAnim === "expandXOut") {
-        el.style.transition = 'transform 1.6s ease-in, opacity 1.6s ease-in';
-        el.style.transform = 'scaleX(2.5)';
-        el.style.opacity = '0';
-        await wait(1650);
+        // 00:13 - 00:15 向左滑出消失
+        if (step.outAnim === "slideLeftOut") {
+          el.style.transition = 'transform 1.8s cubic-bezier(0.7, 0, 0.8, 0.2)';
+          el.style.transform = `translateX(-${stageW}px)`;
+          await wait(1850);
+        }
+        else if (step.outAnim === "slideUpOut") {
+          el.style.transition = 'transform 1.6s cubic-bezier(0.7, 0, 0.8, 0.2)';
+          el.style.transform = 'translateY(-150%)';
+          await wait(1650);
+        }
       }
 
       currentStepIdx = (currentStepIdx + 1) % SEQUENCE_STEPS.length;
