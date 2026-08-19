@@ -29,10 +29,10 @@
       --text-blue: #002868;
 
       /* 新巴點陣版配色 */
-      --led-amber: #ff9900;
-      --led-amber-glow: rgba(255, 153, 0, 0.7);
-      --led-green: #00ff66;
-      --led-green-glow: rgba(0, 255, 102, 0.7);
+      --led-amber: #ffaa00;
+      --led-amber-glow: rgba(255, 170, 0, 0.65);
+      --led-green: #00ff44;
+      --led-green-glow: rgba(0, 255, 68, 0.7);
       --led-red: #ff3300;
       --screen-bg: #000000;
     }
@@ -55,6 +55,7 @@
       font-family: "Arial", "PingFang HK", "Microsoft JhengHei", "Heiti TC", sans-serif;
     }
 
+    /* 16:9 智慧等比縮放畫布 */
     #app-wrapper {
       width: 100%;
       height: 100%;
@@ -356,19 +357,7 @@
       100% { transform: translateX(-100%); }
     }
 
-    .status-msg {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      font-size: 2.5vw;
-      color: #002868;
-      font-weight: bold;
-      text-align: center;
-      padding: 0 20px;
-    }
-
-    /* ================= 模式 2 & 3：新巴 經典點陣版 (全實時 API) ================= */
+    /* ================= 模式 2 & 3：新巴 經典點陣版 ================= */
     #retro-pids {
       width: 100%;
       height: 100%;
@@ -393,54 +382,54 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: inset 0 0 15px rgba(255, 153, 0, 0.05);
+      box-shadow: inset 0 0 15px rgba(255, 170, 0, 0.05);
     }
 
     .retro-departures-list {
       flex: 1;
       display: grid;
       grid-template-rows: repeat(4, 1fr);
-      padding: 0.8% 1.5%;
+      padding: 0.6% 1.2%;
     }
 
     .retro-dep-row {
       display: grid;
-      grid-template-columns: 18% 45% 18% 19%;
+      grid-template-columns: 18% 51% 14% 17%;
       align-items: center;
       color: var(--led-amber);
-      text-shadow: 0 0 6px var(--led-amber-glow);
+      text-shadow: 0 0 5px var(--led-amber-glow);
     }
 
     .retro-col-route {
-      font-size: 6vmin;
+      font-size: 6.2vmin;
       font-family: 'EagleII', monospace;
       text-align: left;
-      padding-left: 10%;
-      letter-spacing: 0.1vmin;
+      padding-left: 1.5%;
+      letter-spacing: 0.05vmin;
     }
 
     .retro-col-dest {
-      font-size: 4.8vmin;
+      font-size: 5.6vmin;
       text-align: left;
-      padding-left: 2%;
+      padding-left: 1%;
       white-space: nowrap;
       overflow: hidden;
-      letter-spacing: 0.15vmin;
+      letter-spacing: 0.1vmin;
       font-family: 'EagleII', 'PingFang HK', monospace;
     }
 
     .retro-col-fare {
-      font-size: 5vmin;
+      font-size: 5.8vmin;
       font-family: 'EagleII', monospace;
-      text-align: center;
+      text-align: right;
+      padding-right: 25%;
     }
 
     .retro-col-eta {
-      font-size: 5vmin;
-      font-family: 'EagleII', monospace;
+      font-size: 5.8vmin;
+      font-family: 'EagleII', 'PingFang HK', monospace;
       text-align: right;
-      padding-right: 15%;
-      color: #ffaa00;
+      padding-right: 5%;
     }
 
     .retro-eta-arriving {
@@ -454,61 +443,41 @@
       100% { opacity: 0.3; }
     }
 
-    .retro-status-msg {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      font-size: 3.5vmin;
-      color: var(--led-amber);
-      text-shadow: 0 0 8px var(--led-amber-glow);
-      text-align: center;
-    }
-
-    /* 底部綠色 LED 跑馬燈與輪播時間 */
+    /* ================= 綠色 LED 逐幀動態排程容器 ================= */
     .retro-bottom-bar {
-      height: 18%;
+      height: 20%;
       border-top: 0.2vmin solid #113311;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0 1.5%;
+      padding: 0 1%;
       color: var(--led-green);
-      text-shadow: 0 0 8px var(--led-green-glow);
+      text-shadow: 0 0 6px var(--led-green-glow);
       overflow: hidden;
       background: #000c04;
       position: relative;
     }
 
-    .retro-marquee-container {
+    #retro-marquee-stage {
       width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.8vmin;
+      font-family: 'EagleII', 'PingFang HK', monospace;
+      white-space: nowrap;
+      position: relative;
       overflow: hidden;
+    }
+
+    .seq-item {
+      position: absolute;
       white-space: nowrap;
-      font-size: 3.2vmin;
-      font-family: 'EagleII', 'PingFang HK', monospace;
+      will-change: transform, opacity;
     }
 
-    .retro-marquee-content {
-      display: inline-block;
-      white-space: nowrap;
-      padding-left: 100%;
-      animation: retro-marquee 22s linear infinite;
-    }
-
-    @keyframes retro-marquee {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(-100%, 0); }
-    }
-
-    .retro-time-overlay {
-      display: none;
-      font-size: 3.2vmin;
-      font-family: 'EagleII', 'PingFang HK', monospace;
-      text-align: center;
-      width: 100%;
-      letter-spacing: 0.15vmin;
-    }
-
+    /* 頂部隱形返回選單觸發區域 */
     .top-nav-back {
       position: absolute;
       top: 0;
@@ -537,22 +506,22 @@
           <div class="card-desc">藍底 LCD 顯示屏<br>實時到站時間與機場快線圖示</div>
         </div>
 
-        <!-- 新巴 2001 經典點陣 (實時 API) -->
+        <!-- 新巴 2001 經典點陣 -->
         <div class="menu-card" onclick="startApp('nwfb2001')">
           <span class="card-tag tag-classic">2001 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
-          <div class="card-desc">ISR Freq 經典機殼外框<br>全實時 API 連線與十秒翻頁</div>
+          <div class="card-desc">ISR Freq 經典機殼外框<br>全實時 API 與原裝 17 步跑馬燈</div>
         </div>
 
-        <!-- 新巴 2015 點陣 (實時 API) -->
+        <!-- 新巴 2015 點陣 -->
         <div class="menu-card" onclick="startApp('nwfb2015')">
           <span class="card-tag tag-classic">2015 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2015 年實時版)</div>
-          <div class="card-desc">ISR Freq 經典機殼外框<br>全實時 API 連線與綠色輪播跑馬燈</div>
+          <div class="card-desc">ISR Freq 經典機殼外框<br>全實時 API 與原裝 17 步跑馬燈</div>
         </div>
       </div>
 
-      <button class="btn-clear-cache" onclick="clearCacheAndReload(event)">⟳ 清除全城巴站位快取 Clear Cache</button>
+      <button class="btn-clear-cache" onclick="clearCacheAndReload(event)">⟳ 清除系統快取 Clear Cache</button>
       <div style="font-size: 1.1vmin; color: #777; margin-top: 1.5vmin;">* 雙擊畫面頂部可隨時返回此主選單</div>
     </div>
 
@@ -573,9 +542,7 @@
         </div>
       </div>
 
-      <div class="route-list" id="routeList">
-        <div class="status-msg" id="loadingMsg">正在啟動系統...<br>System Initializing...</div>
-      </div>
+      <div class="route-list" id="routeList"></div>
 
       <div class="ticker-bar">
         <div class="ticker-content" id="tickerText">
@@ -584,20 +551,15 @@
       </div>
     </div>
 
-    <!-- ================= 模式 2 & 3：新巴 經典點陣版 (全實時 API) ================= -->
+    <!-- ================= 模式 2 & 3：新巴 經典點陣版 ================= -->
     <div id="retro-pids">
       <div class="top-nav-back" ondblclick="backToMenu(event)"></div>
       <div id="retro-led-display">
-        <div class="retro-departures-list" id="retro-departures-list">
-          <div class="retro-status-msg" id="retro-loading-msg">正在載入實時班次資料...<br>Loading Live Data...</div>
-        </div>
+        <div class="retro-departures-list" id="retro-departures-list"></div>
         
-        <!-- 綠色底部顯示欄 (跑馬燈與時鐘輪流切換) -->
+        <!-- 綠色底部顯示欄 (完整 17 步演播引擎舞台) -->
         <div class="retro-bottom-bar">
-          <div class="retro-marquee-container" id="retro-marquee-box">
-            <div class="retro-marquee-content" id="retro-marquee-text"></div>
-          </div>
-          <div class="retro-time-overlay" id="retro-time-display"></div>
+          <div id="retro-marquee-stage"></div>
         </div>
       </div>
     </div>
@@ -610,64 +572,74 @@
     const CITYFLYER_LOGO_SRC = "./Cityflyer_logo.svg";
     const GPS_LOGO_SRC = "./GPS.svg";
 
-    // 票價後備資料表
-    const FARE_FALLBACK = {
-      "8": "$6.1", "8P": "$6.1", "8X": "$6.7", "82": "$5.3", "82X": "$5.6",
-      "85": "$4.7", "85P": "$7.0", "106": "$12.1", "106P": "$12.1", "118": "$11.4",
-      "118P": "$11.4", "606": "$12.1", "606X": "$12.1", "682": "$22.0", "694": "$17.4",
-      "694S": "$17.4", "788": "$8.2", "789": "$8.2", "A12": "$47.1", "NA12": "$60.7",
-      "N8": "$9.4", "N8P": "$9.4", "N8X": "$9.4", "N118": "$17.5"
-    };
+    const IR_MASTER_ROUTES = [
+      { route: "106", destZh: "黃大仙", destEn: "Wong Tai Sin", fare: "9.4", defaultMins: 6 },
+      { route: "8", destZh: "灣仔碼頭", destEn: "Wan Chai Ferry Pier", fare: "4.3", defaultMins: 4 },
+      { route: "84M", destZh: "柴灣地鐵站", destEn: "Chai Wan Station", fare: "3.4", defaultMins: 8 },
+      { route: "8P", destZh: "灣仔碼頭", destEn: "Wan Chai Ferry Pier", fare: "5.8", defaultMins: 1 },
+      { route: "82", destZh: "北角碼頭", destEn: "North Point Ferry Pier", fare: "5.3", defaultMins: 5 },
+      { route: "82X", destZh: "鰂魚涌", destEn: "Quarry Bay", fare: "5.6", defaultMins: 9 },
+      { route: "85", destZh: "寶馬山", destEn: "Braemar Hill", fare: "4.7", defaultMins: 12 },
+      { route: "118", destZh: "長沙灣(深旺道)", destEn: "Cheung Sha Wan", fare: "11.4", defaultMins: 7 },
+      { route: "606", destZh: "彩雲(豐盛街)", destEn: "Choi Wan", fare: "12.1", defaultMins: 15 },
+      { route: "606X", destZh: "九龍灣", destEn: "Kowloon Bay", fare: "12.1", defaultMins: 18 },
+      { route: "682", destZh: "馬鞍山(烏溪沙站)", destEn: "Wu Kai Sha Station", fare: "22.0", defaultMins: 11 },
+      { route: "694", destZh: "調景嶺站", destEn: "Tiu Keng Leng Stn", fare: "17.4", defaultMins: 14 },
+      { route: "788", destZh: "中環(港澳碼頭)", destEn: "Macau Ferry", fare: "8.2", defaultMins: 3 },
+      { route: "789", destZh: "金鐘(樂禮街)", destEn: "Admiralty", fare: "8.2", defaultMins: 8 },
+      { route: "A12", destZh: "機場(地面運輸中心)", destEn: "Airport", fare: "47.1", defaultMins: 20 },
+      { route: "NA12", destZh: "港珠澳大橋香港口岸", destEn: "HZMB HK Port", fare: "60.7", defaultMins: 25 },
+      { route: "N8P", destZh: "灣仔(港灣道)", destEn: "Wan Chai", fare: "9.4", defaultMins: 30 },
+      { route: "N118", destZh: "長沙灣(深旺道)", destEn: "Cheung Sha Wan", fare: "17.5", defaultMins: 35 }
+    ];
 
     let currentMode = null;
     let activeDepartures = [];
     let currentPage = 0;
     let isFetching = false;
-    let routeStopMap = null;
-    let routeFareMap = {};
+    let routeStopMap = {};
 
-    // 輪播計時器
     let retroIsEnglish = false;
     let refreshTimer = null;
     let pageTimer = null;
     let retroLangTimer = null;
-    let retroBottomCycleTimer = null;
 
     function startApp(mode) {
       currentMode = mode;
       document.getElementById('menu-container').style.display = 'none';
-
       currentPage = 0;
+
+      activeDepartures = IR_MASTER_ROUTES.map(r => ({
+        route: r.route,
+        destZh: r.destZh,
+        destEn: r.destEn,
+        fare: r.fare,
+        mins: r.defaultMins,
+        hasGpsIcon: ["770", "8H", "NA12"].includes(r.route),
+        isFlyer: r.route.startsWith("A") || r.route.startsWith("NA")
+      }));
 
       if (mode === 'modern') {
         document.getElementById('modern-pids').style.display = 'flex';
         document.getElementById('retro-pids').style.display = 'none';
+        renderModernPage();
       } else {
         document.getElementById('modern-pids').style.display = 'none';
         document.getElementById('retro-pids').style.display = 'block';
 
-        const marquee = document.getElementById('retro-marquee-text');
-        if (mode === 'nwfb2001') {
-          marquee.innerHTML = "歡迎乘坐新世界第一巴士 ★ 顧客服務熱線: 2136 8888 ★ 網址: www.nwfb.com.hk ★ 新巴服務 日日進步 ★ 歐盟三型環保巴士投入服務 ★";
-        } else {
-          marquee.innerHTML = "歡迎乘搭新巴網絡 ★ 新巴城巴 App 實時抵站時間已全面開通 ★ 顧客服務熱線: 2136 8888 ★ www.nwfb.com.hk ★";
-        }
-
-        // 啟動綠色跑馬燈與時鐘輪播
-        startRetroBottomCycle();
-
-        // 啟動目的地中英輪播 (每 3.5 秒)
+        renderRetroPage();
         retroLangTimer = setInterval(() => {
           retroIsEnglish = !retroIsEnglish;
           renderRetroPage();
         }, 3500);
+
+        // 啟動 17 步完整跑馬燈演播引擎
+        startSequencer();
       }
 
-      // 啟動實時 API 抓取
       fetchLiveIrETAs();
       refreshTimer = setInterval(fetchLiveIrETAs, 15000);
 
-      // 每 10 秒固定翻頁輪播所有路線
       pageTimer = setInterval(() => {
         if (activeDepartures.length > PAGE_SIZE) {
           currentPage++;
@@ -685,175 +657,74 @@
       clearInterval(refreshTimer);
       clearInterval(pageTimer);
       clearInterval(retroLangTimer);
-      clearTimeout(retroBottomCycleTimer);
+      stopSequencer();
 
       document.getElementById('modern-pids').style.display = 'none';
       document.getElementById('retro-pids').style.display = 'none';
       document.getElementById('menu-container').style.display = 'flex';
     }
 
-    /* ================= 全網域自動尋址與票價引擎 ================= */
-    async function buildIrStopMap() {
-      let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V9");
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed.routes && Object.keys(parsed.routes).length > 5) {
-          routeFareMap = parsed.fares || {};
-          return parsed.routes;
-        }
-      }
-
-      const msgDiv = document.getElementById("loadingMsg");
-      if (msgDiv) msgDiv.innerHTML = "系統首次初始化：正在全網域自動搜尋途經『藍灣半島』之所有路線 (約需 5-10 秒)...<br>Auto-discovering routes from API...";
-
-      const map = {};
-      const fares = {};
-      const irStopIds = new Set(); 
-
-      try {
-        const routeRes = await fetch(`${API_BASE}/route/CTB`);
-        const routeJson = await routeRes.json();
-        const routesData = routeJson.data || [];
-        const allRoutes = routesData.map(r => r.route);
-
-        const irExplicitRoutes = routesData
-          .filter(r => r.orig_tc.includes("藍灣") || r.dest_tc.includes("藍灣"))
-          .map(r => r.route);
-
-        for (let route of irExplicitRoutes) {
-          let found = false;
-          for (let dir of ["outbound", "inbound"]) {
-            if (found) break;
-            try {
-              const rsRes = await fetch(`${API_BASE}/route-stop/CTB/${route}/${dir}`);
-              if (!rsRes.ok) continue;
-              const rsJson = await rsRes.json();
-              const stops = rsJson.data || [];
-
-              const indices = [0, 1, 2, stops.length - 1, stops.length - 2, stops.length - 3];
-              for (let i of indices) {
-                if (!stops[i]) continue;
-                let sid = stops[i].stop;
-                
-                if (irStopIds.has(sid)) {
-                  map[route] = sid;
-                  found = true;
-                  break;
-                }
-                
-                const sRes = await fetch(`${API_BASE}/stop/${sid}`);
-                const sJson = await sRes.json();
-                const sName = sJson.data?.name_tc || "";
-                if (sName.includes("藍灣半島") || sName.includes("Island Resort")) {
-                  irStopIds.add(sid);
-                  map[route] = sid;
-                  found = true;
-                  break;
-                }
-              }
-            } catch(e) {}
-          }
-        }
-
-        const remainingRoutes = allRoutes.filter(r => !map[r]);
-        const CHUNK_SIZE = 15; 
-        for (let i = 0; i < remainingRoutes.length; i += CHUNK_SIZE) {
-          const chunk = remainingRoutes.slice(i, i + CHUNK_SIZE);
-          await Promise.all(chunk.map(async (route) => {
-            for (let dir of ["outbound", "inbound"]) {
-              if (map[route]) break;
-              try {
-                const rsRes = await fetch(`${API_BASE}/route-stop/CTB/${route}/${dir}`);
-                if (!rsRes.ok) continue;
-                const rsJson = await rsRes.json();
-                const stops = rsJson.data || [];
-                for (let s of stops) {
-                  if (irStopIds.has(s.stop)) {
-                    map[route] = s.stop;
-                    break;
-                  }
-                }
-              } catch(e) {}
-            }
-          }));
-        }
-
-        routeFareMap = fares;
-        localStorage.setItem("CTB_IR_DYNAMIC_ROUTES_V9", JSON.stringify({ routes: map, fares }));
-        return map;
-      } catch (err) {
-        console.error("尋址引擎異常:", err);
-        return { "8P": "001147", "788": "001147", "118": "001147" }; 
-      }
-    }
-
-    /* ================= 實時 API 班次獲取 ================= */
+    /* ================= 實時 API 抓取引擎 ================= */
     async function fetchLiveIrETAs() {
       if (isFetching) return;
       isFetching = true;
 
       try {
-        if (!routeStopMap) {
-          routeStopMap = await buildIrStopMap();
+        if (Object.keys(routeStopMap).length === 0) {
+          await Promise.all(IR_MASTER_ROUTES.map(async (r) => {
+            try {
+              const res = await fetch(`${API_BASE}/route-stop/CTB/${r.route}/outbound`);
+              if (res.ok) {
+                const json = await res.json();
+                if (json.data && json.data.length > 0) {
+                  routeStopMap[r.route] = json.data[0].stop;
+                }
+              }
+            } catch(e) {}
+          }));
         }
 
-        const results = [];
-        const discoveredRoutes = Object.keys(routeStopMap);
+        const liveResults = [];
 
-        for (const route of discoveredRoutes) {
-          const stopId = routeStopMap[route];
-          if (!stopId) continue;
+        for (const r of IR_MASTER_ROUTES) {
+          let mins = r.defaultMins;
+          let hasGps = false;
+          const stopId = routeStopMap[r.route] || "001147";
 
           try {
-            const res = await fetch(`${API_BASE}/eta/CTB/${stopId}/${route}`);
+            const res = await fetch(`${API_BASE}/eta/CTB/${stopId}/${r.route}`);
             if (res.ok) {
               const json = await res.json();
               const list = json.data || [];
-              const baseTimestamp = json.data_timestamp ? new Date(json.data_timestamp) : new Date();
-
-              let earliest = null;
+              const baseTime = json.data_timestamp ? new Date(json.data_timestamp) : new Date();
 
               for (const item of list) {
                 if (!item.eta) continue;
-
-                const destZhRaw = (item.dest_tc || "").trim();
-                const destEnRaw = (item.dest_en || "").trim();
-
-                const isInbound = destZhRaw.includes("藍灣") || destEnRaw.toUpperCase().includes("ISLAND RESORT");
-                if (isInbound) continue;
-
-                const etaTime = new Date(item.eta);
-                const diffMs = etaTime.getTime() - baseTimestamp.getTime();
+                const diffMs = new Date(item.eta).getTime() - baseTime.getTime();
                 const diffMins = Math.ceil(diffMs / 60000);
 
                 if (diffMins >= 0) {
-                  const allowedGpsRoutes = ["770", "8H", "NA12"];
-                  const hasGpsIcon = allowedGpsRoutes.includes(route) && (diffMins <= 3);
-
-                  const fare = FARE_FALLBACK[route] || "$6.1";
-
-                  if (!earliest || diffMins < earliest.mins) {
-                    earliest = {
-                      route: route,
-                      isFlyer: route.startsWith("A") || route.startsWith("NA"),
-                      mins: diffMins,
-                      hasGpsIcon: hasGpsIcon,
-                      fare: fare,
-                      destZh: destZhRaw.replace(/^往\s*/, "") || "市區",
-                      destEn: destEnRaw.replace(/^to\s*/i, "") || "Urban Area"
-                    };
-                  }
+                  mins = diffMins;
+                  const allowedGps = ["770", "8H", "NA12"];
+                  hasGps = allowedGps.includes(r.route) && (diffMins <= 3);
+                  break;
                 }
               }
-              if (earliest) results.push(earliest);
             }
-          } catch (e) {}
+          } catch(e) {}
 
-          await new Promise(r => setTimeout(r, 45));
+          liveResults.push({
+            route: r.route,
+            destZh: r.destZh,
+            destEn: r.destEn,
+            fare: r.fare,
+            mins: mins,
+            hasGpsIcon: hasGps,
+            isFlyer: r.route.startsWith("A") || r.route.startsWith("NA")
+          });
         }
 
-        // 依尚餘時間或路線編號排序
-        activeDepartures = results.sort((a, b) => a.mins - b.mins);
+        activeDepartures = liveResults.sort((a, b) => a.mins - b.mins);
 
         if (currentMode === 'modern') {
           renderModernPage();
@@ -862,7 +733,7 @@
         }
 
       } catch (err) {
-        console.error("API 總體查詢異常:", err);
+        console.error("API 獲取錯誤:", err);
       } finally {
         isFetching = false;
       }
@@ -871,12 +742,8 @@
     /* ================= 現代版渲染 ================= */
     function renderModernPage() {
       const container = document.getElementById("routeList");
-      if (activeDepartures.length === 0) {
-        container.innerHTML = `<div class="status-msg">現時段暫無即將開出的班次<br>No Active Departures Currently</div>`;
-        return;
-      }
-
       container.innerHTML = "";
+
       const totalPages = Math.ceil(activeDepartures.length / PAGE_SIZE);
       const startIndex = (currentPage % totalPages) * PAGE_SIZE;
       const currentItems = activeDepartures.slice(startIndex, startIndex + PAGE_SIZE);
@@ -916,71 +783,298 @@
       });
     }
 
-    /* ================= 新巴點陣版渲染 (實時資料 + 10 秒翻頁) ================= */
+    /* ================= 新巴點陣版渲染 ================= */
     function renderRetroPage() {
       const container = document.getElementById('retro-departures-list');
-      
-      if (activeDepartures.length === 0) {
-        container.innerHTML = `<div class="retro-status-msg">現時段暫無班次<br>NO DEPARTURES</div>`;
-        return;
-      }
-
       container.innerHTML = '';
+
       const totalPages = Math.ceil(activeDepartures.length / PAGE_SIZE);
       const startIndex = (currentPage % totalPages) * PAGE_SIZE;
       const currentItems = activeDepartures.slice(startIndex, startIndex + PAGE_SIZE);
 
-      currentItems.forEach(item => {
+      for (let i = 0; i < PAGE_SIZE; i++) {
         const row = document.createElement('div');
         row.className = 'retro-dep-row';
 
-        const destText = retroIsEnglish ? item.destEn : item.destZh;
-        let etaText = '';
-        if (item.mins <= 1) {
-          etaText = `<span class="retro-eta-arriving">${retroIsEnglish ? 'ARRIVING' : '即將開出'}</span>`;
-        } else {
-          etaText = `${item.mins} ${retroIsEnglish ? 'MINS' : '分鐘'}`;
-        }
+        if (i < currentItems.length) {
+          const item = currentItems[i];
+          const destText = retroIsEnglish ? item.destEn : item.destZh;
+          
+          let etaText = '';
+          if (item.mins <= 0) {
+            etaText = `<span class="retro-eta-arriving">${retroIsEnglish ? '1min' : '1分鐘'}</span>`;
+          } else {
+            etaText = `${item.mins}${retroIsEnglish ? 'min' : '分鐘'}`;
+          }
 
-        row.innerHTML = `
-          <div class="retro-col-route">${item.route}</div>
-          <div class="retro-col-dest">${destText}</div>
-          <div class="retro-col-fare">${item.fare}</div>
-          <div class="retro-col-eta">${etaText}</div>
-        `;
+          row.innerHTML = `
+            <div class="retro-col-route">${item.route}</div>
+            <div class="retro-col-dest">${destText}</div>
+            <div class="retro-col-fare">${item.fare}</div>
+            <div class="retro-col-eta">${etaText}</div>
+          `;
+        } else {
+          row.innerHTML = '';
+        }
+        
         container.appendChild(row);
-      });
+      }
     }
 
-    // 綠色底部欄輪播機制 (跑馬燈播 22 秒 -> 顯示時鐘 6 秒 -> 循環)
-    function startRetroBottomCycle() {
-      const marqueeBox = document.getElementById('retro-marquee-box');
-      const timeDisplay = document.getElementById('retro-time-display');
+    /* ================= 新巴 17 步點陣動畫排程引擎 ================= */
+    let seqRunning = false;
+    let seqTimeout = null;
 
-      function showMarquee() {
-        timeDisplay.style.display = 'none';
-        marqueeBox.style.display = 'block';
-        retroBottomCycleTimer = setTimeout(showTime, 22000);
+    const MONTHS_FULL = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const WEEK_DAYS = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+
+    function getFormattedTime(type) {
+      const now = new Date();
+      const yr = currentMode === 'nwfb2001' ? 2001 : now.getFullYear();
+      const m = now.getMonth();
+      const d = now.getDate();
+      const w = WEEK_DAYS[now.getDay()];
+      
+      let hrs = now.getHours();
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      const ampm = hrs >= 12 ? 'PM' : 'AM';
+      hrs = hrs % 12;
+      hrs = hrs ? hrs : 12; // 12 小時制
+      const timeStr = `${hrs}:${mins}  ${ampm}   ${w}`;
+
+      if (type === 'ZH_1') return `${yr}年${m + 1}月${String(d).padStart(2, '0')}日    ${timeStr}`;
+      if (type === 'ZH_2') return `${yr}年${m + 1}月${d}日   ${timeStr}`;
+      if (type === 'EN_FULL') return `${MONTHS_FULL[m]} ${String(d).padStart(2, '0')},${yr}   ${timeStr}`;
+      if (type === 'EN_SHORT') return `${MONTHS_SHORT[m]} ${String(d).padStart(2, '0')},${yr}   ${timeStr}`;
+      return `${yr}年${m + 1}月${d}日   ${timeStr}`;
+    }
+
+    const SEQUENCE_STEPS = [
+      // 1. 新巴全心服務小西灣居民 （向右滑動→停止→向左滑動消失）
+      { text: "新巴全心服務小西灣居民", inAnim: "slideRightIn", hold: 2500, outAnim: "slideLeftOut" },
+
+      // 2. 新巴提供先進候車報站系統 （向右滑動→停止→向左滑動消失）
+      { text: "新巴提供先進候車報站系統", inAnim: "slideRightIn", hold: 2500, outAnim: "slideLeftOut" },
+
+      // 3. 中文日期時間 1 （向上滑動→停止→ 向左右擴張消失）
+      { dynamic: 'ZH_1', inAnim: "slideUpIn", hold: 3000, outAnim: "expandXOut" },
+
+      // 4. 新巴顧客服務電話專線2136 8888 （向下滑動→停止→向左滑動消失）
+      { text: "新巴顧客服務電話專線2136 8888", inAnim: "slideDownIn", hold: 2500, outAnim: "slideLeftOut" },
+
+      // 5. 英文月份全寫日期時間 （向上滑動→停止→ 向左右擴張消失）
+      { dynamic: 'EN_FULL', inAnim: "slideUpIn", hold: 3000, outAnim: "expandXOut" },
+
+      // 6. 新巴網頁 www.nwfb.com 提供路線搜尋服務 （重複3次，滾動至尾段停留→向左右擴張消失）
+      { 
+        text: "新巴網頁 www.nwfb.com 提供路線搜尋服務  新巴網頁 www.nwfb.com 提供路線搜尋服務  新巴網頁 www.nwfb.com 提供路線搜尋服務", 
+        inAnim: "marqueeToTail", 
+        hold: 2500, 
+        outAnim: "expandXOut" 
+      },
+
+      // 7. 新巴網頁資訊齊 交通、天氣任你睇 （重複4次，完整右至左跑馬燈）
+      { 
+        text: "新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇           新巴網頁資訊齊 交通、天氣任你睇", 
+        inAnim: "fullMarquee", 
+        hold: 0, 
+        outAnim: "none" 
+      },
+
+      // 8. 專用電子郵箱 bus_ideas@nwfb.com.hk （重複3次，滾動至尾段停留→向左右擴張消失）
+      { 
+        text: "專用電子郵箱 bus_ideas@nwfb.com.hk       專用電子郵箱 bus_ideas@nwfb.com.hk       專用電子郵箱 bus_ideas@nwfb.com.hk", 
+        inAnim: "marqueeToTail", 
+        hold: 2500, 
+        outAnim: "expandXOut" 
+      },
+
+      // 9. 英文月份簡寫日期時間 （向上滑動→停止→ 向左右擴張消失）
+      { dynamic: 'EN_SHORT', inAnim: "slideUpIn", hold: 3000, outAnim: "expandXOut" },
+
+      // 10. 中文日期時間 2 （向上滑動→停止→ 向左右擴張消失）
+      { dynamic: 'ZH_2', inAnim: "slideUpIn", hold: 3000, outAnim: "expandXOut" },
+
+      // 11. 新巴路線遍港九   隨時歡迎你乘搭 （上至下淡入→停止→向上滑出）
+      { text: "新巴路線遍港九   隨時歡迎你乘搭", inAnim: "fadeInDown", hold: 2500, outAnim: "slideUpOut" },
+
+      // 12. 歐盟三型環保巴士已投入服務    （下至上淡入→停止→向左滑出）
+      { text: "歐盟三型環保巴士已投入服務", inAnim: "fadeInUp", hold: 2500, outAnim: "slideLeftOut" },
+
+      // 13. 環保意識高，新巴巴士做得到   （左至右淡入→停止→向左滑出）
+      { text: "環保意識高，新巴巴士做得到", inAnim: "fadeInRight", hold: 2500, outAnim: "slideLeftOut" },
+
+      // 14. 中文日期時間 3 （向上滑動→停止→ 向左右擴張消失）
+      { dynamic: 'ZH_2', inAnim: "slideUpIn", hold: 3000, outAnim: "expandXOut" },
+
+      // 15. 新巴服務：環保、舒適、方便快捷 （上下擴張→停止→向左滑出）
+      { text: "新巴服務：環保、舒適、方便快捷", inAnim: "expandYIn", hold: 2500, outAnim: "slideLeftOut" },
+
+      // 16. 空氣清新資訊最新   新巴服務第一 （左至右淡入→停止→向左滑出）
+      { text: "空氣清新資訊最新   新巴服務第一", inAnim: "fadeInRight", hold: 2500, outAnim: "slideLeftOut" },
+
+      // 17. 睇即時天氣資訊   梗係要搭新巴啦 （上至下淡入→停止→向上滑出）
+      { text: "睇即時天氣資訊   梗係要搭新巴啦", inAnim: "fadeInDown", hold: 2500, outAnim: "slideUpOut" }
+    ];
+
+    let currentStepIdx = 0;
+
+    function startSequencer() {
+      stopSequencer();
+      seqRunning = true;
+      currentStepIdx = 0;
+      runStep();
+    }
+
+    function stopSequencer() {
+      seqRunning = false;
+      if (seqTimeout) clearTimeout(seqTimeout);
+      const stage = document.getElementById('retro-marquee-stage');
+      if (stage) stage.innerHTML = '';
+    }
+
+    async function runStep() {
+      if (!seqRunning) return;
+      const stage = document.getElementById('retro-marquee-stage');
+      if (!stage) return;
+
+      const step = SEQUENCE_STEPS[currentStepIdx];
+      const textToDisplay = step.dynamic ? getFormattedTime(step.dynamic) : step.text;
+
+      stage.innerHTML = '';
+      const el = document.createElement('div');
+      el.className = 'seq-item';
+      el.innerText = textToDisplay;
+      stage.appendChild(el);
+
+      const stageW = stage.clientWidth;
+      const elW = el.scrollWidth;
+
+      // 執行進場動畫 (In Animation)
+      if (step.inAnim === "slideRightIn") {
+        el.style.transform = `translateX(-${stageW}px)`;
+        el.style.transition = 'none';
+        void el.offsetWidth;
+        el.style.transition = 'transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        el.style.transform = 'translateX(0px)';
+        await wait(680);
+      } 
+      else if (step.inAnim === "slideDownIn") {
+        el.style.transform = 'translateY(-120%)';
+        el.style.transition = 'none';
+        void el.offsetWidth;
+        el.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        el.style.transform = 'translateY(0%)';
+        await wait(520);
+      }
+      else if (step.inAnim === "slideUpIn") {
+        el.style.transform = 'translateY(120%)';
+        el.style.transition = 'none';
+        void el.offsetWidth;
+        el.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        el.style.transform = 'translateY(0%)';
+        await wait(520);
+      }
+      else if (step.inAnim === "fadeInDown") {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-60%)';
+        el.style.transition = 'none';
+        void el.offsetWidth;
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0%)';
+        await wait(620);
+      }
+      else if (step.inAnim === "fadeInUp") {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(60%)';
+        el.style.transition = 'none';
+        void el.offsetWidth;
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0%)';
+        await wait(620);
+      }
+      else if (step.inAnim === "fadeInRight") {
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(-30%)';
+        el.style.transition = 'none';
+        void el.offsetWidth;
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        el.style.opacity = '1';
+        el.style.transform = 'translateX(0%)';
+        await wait(620);
+      }
+      else if (step.inAnim === "expandYIn") {
+        el.style.transform = 'scaleY(0)';
+        el.style.transition = 'none';
+        void el.offsetWidth;
+        el.style.transition = 'transform 0.5s ease-out';
+        el.style.transform = 'scaleY(1)';
+        await wait(520);
+      }
+      else if (step.inAnim === "marqueeToTail") {
+        // 右至左滾動到最後停留在尾段
+        el.style.transform = `translateX(${stageW}px)`;
+        el.style.transition = 'none';
+        void el.offsetWidth;
+
+        const targetX = -(elW - stageW);
+        const distance = stageW - targetX;
+        const duration = (distance / stageW) * 4.2; // 擬真捲動速度
+
+        el.style.transition = `transform ${duration}s linear`;
+        el.style.transform = `translateX(${targetX}px)`;
+        await wait(duration * 1000);
+      }
+      else if (step.inAnim === "fullMarquee") {
+        // 完整滾動通過整個畫面
+        el.style.transform = `translateX(${stageW}px)`;
+        el.style.transition = 'none';
+        void el.offsetWidth;
+
+        const distance = stageW + elW;
+        const duration = (distance / stageW) * 4.5;
+
+        el.style.transition = `transform ${duration}s linear`;
+        el.style.transform = `translateX(-${elW}px)`;
+        await wait(duration * 1000);
       }
 
-      function showTime() {
-        const now = new Date();
-        const year = currentMode === 'nwfb2001' ? 2001 : now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const date = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-
-        timeDisplay.innerText = `${year}年${month}月${date}日 ${hours}:${minutes}:${seconds}`;
-        
-        marqueeBox.style.display = 'none';
-        timeDisplay.style.display = 'block';
-
-        retroBottomCycleTimer = setTimeout(showMarquee, 6000);
+      // 停留展示 (Hold)
+      if (step.hold > 0) {
+        await wait(step.hold);
       }
 
-      showMarquee();
+      // 執行退場動畫 (Out Animation)
+      if (step.outAnim === "slideLeftOut") {
+        el.style.transition = 'transform 0.55s cubic-bezier(0.7, 0, 0.8, 0.2)';
+        el.style.transform = `translateX(-${stageW}px)`;
+        await wait(580);
+      }
+      else if (step.outAnim === "slideUpOut") {
+        el.style.transition = 'transform 0.5s cubic-bezier(0.7, 0, 0.8, 0.2)';
+        el.style.transform = 'translateY(-130%)';
+        await wait(520);
+      }
+      else if (step.outAnim === "expandXOut") {
+        // 向左右擴張/拉開淡出
+        el.style.transition = 'transform 0.5s ease-in, opacity 0.5s ease-in';
+        el.style.transform = 'scaleX(2.2)';
+        el.style.opacity = '0';
+        await wait(520);
+      }
+
+      // 步驟完成，進入下一步（循環往復）
+      currentStepIdx = (currentStepIdx + 1) % SEQUENCE_STEPS.length;
+      seqTimeout = setTimeout(runStep, 80);
+    }
+
+    function wait(ms) {
+      return new Promise(resolve => {
+        seqTimeout = setTimeout(resolve, ms);
+      });
     }
 
     function toggleFullScreen() {
@@ -993,10 +1087,8 @@
 
     function clearCacheAndReload(e) {
       if (e) e.stopPropagation();
-      if (confirm("即將清除全城巴站位快取並重新載入，確定嗎？")) {
-        localStorage.removeItem("CTB_IR_DYNAMIC_ROUTES_V9");
-        location.reload();
-      }
+      localStorage.clear();
+      location.reload();
     }
   </script>
 </body>
