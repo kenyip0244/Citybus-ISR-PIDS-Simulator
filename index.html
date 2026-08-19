@@ -3,9 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Citybus Island Resort PIDS Simulator</title>
+  <title>藍灣半島總站 PIDS 模擬器 (Siu Sai Wan Island Resort PIDS Simulator)</title>
+  
+  <!-- 引入本地點陣字體與 Roboto -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  
   <style>
+    @font-face {
+      font-family: 'EagleII';
+      src: url('Ac437_CL_EagleII_8x16.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
     :root {
+      /* 城巴現代版配色 */
       --ctb-blue-bg: #004b99;
       --ctb-yellow-text: #ffeb3b;
       --ctb-row-even: #d6e4f3;
@@ -13,6 +27,12 @@
       --flyer-red: #d31820;
       --bus-blue: #005bac;
       --text-blue: #002868;
+
+      /* 新巴點陣版配色 */
+      --led-amber: #ff9900;
+      --led-amber-glow: rgba(255, 153, 0, 0.7);
+      --led-red: #ff3300;
+      --screen-bg: #000000;
     }
 
     * {
@@ -33,16 +53,128 @@
       font-family: "Arial", "PingFang HK", "Microsoft JhengHei", "Heiti TC", sans-serif;
     }
 
-    #pids-container {
-      width: 100vw;
-      height: 100vh;
-      background: #c2d7ed;
-      display: flex;
-      flex-direction: column;
+    /* 16:9 智慧等比縮放畫布 */
+    #app-wrapper {
+      width: 100%;
+      height: 100%;
+      max-width: calc(100vh * 16 / 9);
+      max-height: calc(100vw * 9 / 16);
       position: relative;
+      overflow: hidden;
+      background: #000;
     }
 
-    /* 頂部標題列 (藍底黃字) */
+    /* ================= 主選單介面 ================= */
+    #menu-container {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a2a40 0%, #08111d 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+
+    .menu-title {
+      font-size: 3.2vmin;
+      color: #ffeb3b;
+      margin-bottom: 0.5vmin;
+      font-weight: bold;
+      text-align: center;
+      text-shadow: 0 0 10px rgba(255, 235, 59, 0.4);
+    }
+
+    .menu-subtitle {
+      font-size: 1.8vmin;
+      color: #a0c4e8;
+      margin-bottom: 3.5vmin;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .menu-grid {
+      display: flex;
+      gap: 2.5vmin;
+    }
+
+    .menu-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 0.2vmin solid rgba(255, 255, 255, 0.2);
+      border-radius: 1vmin;
+      padding: 2.5vmin;
+      width: 25vmin;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5vmin;
+    }
+
+    .menu-card:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: #ffeb3b;
+      transform: translateY(-0.5vmin);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-tag {
+      font-size: 1.2vmin;
+      padding: 0.3vmin 0.8vmin;
+      border-radius: 0.4vmin;
+      font-weight: bold;
+      letter-spacing: 0.05vmin;
+    }
+    .tag-modern { background: #004b99; color: #ffeb3b; }
+    .tag-classic { background: #ff9900; color: #000; }
+
+    .card-title {
+      font-size: 2vmin;
+      font-weight: bold;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .card-desc {
+      font-size: 1.3vmin;
+      color: #ccc;
+      line-height: 1.3;
+    }
+
+    .btn-clear-cache {
+      margin-top: 3.5vmin;
+      padding: 0.8vmin 1.6vmin;
+      font-size: 1.3vmin;
+      color: #aaa;
+      background: rgba(255, 255, 255, 0.05);
+      border: 0.1vmin solid rgba(255, 255, 255, 0.2);
+      border-radius: 0.6vmin;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-clear-cache:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    /* ================= 模式 1：城巴現代版 ================= */
+    #modern-pids {
+      width: 100%;
+      height: 100%;
+      background: #c2d7ed;
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
     .header {
       height: 7.5%;
       background: var(--ctb-blue-bg);
@@ -66,7 +198,6 @@
     .header-col .zh { font-size: 1.4vw; letter-spacing: 1px; }
     .header-col .en { font-size: 1.05vw; font-weight: bold; }
 
-    /* 班次列表主體 */
     .route-list {
       flex: 1;
       display: flex;
@@ -85,7 +216,6 @@
     .route-row:nth-child(even) { background-color: var(--ctb-row-even); }
     .route-row:nth-child(odd) { background-color: var(--ctb-row-odd); }
 
-    /* 左側色條 */
     .side-bar {
       position: absolute;
       left: 0;
@@ -96,7 +226,6 @@
     .side-bar.cityflyer { background-color: var(--flyer-red); }
     .side-bar.standard { background-color: var(--bus-blue); }
 
-    /* 路線號碼欄 */
     .route-col {
       display: flex;
       align-items: center;
@@ -105,14 +234,13 @@
 
     .route-num {
       font-size: 5.2vw;
-      font-weight: 400; /* 幼體 */
+      font-weight: 400;
       color: var(--text-blue);
       letter-spacing: -1.5px;
       line-height: 1;
-      font-family: "Helvetica Neue", "Arial", sans-serif;
+      font-family: "Roboto", "Helvetica Neue", "Arial", sans-serif;
     }
 
-    /* 真實 Cityflyer SVG 圖片 */
     .cityflyer-logo-img {
       height: 3.6vw;
       max-height: 52px;
@@ -121,7 +249,6 @@
       display: block;
     }
 
-    /* 回退用文字 Badge */
     .cityflyer-badge {
       display: flex;
       flex-direction: column;
@@ -146,7 +273,6 @@
       transform-origin: left;
     }
 
-    /* 等候分鐘欄 */
     .mins-col {
       display: flex;
       justify-content: center;
@@ -165,9 +291,9 @@
       font-weight: bold;
       color: #111111;
       line-height: 1;
+      font-family: "Roboto", sans-serif;
     }
 
-    /* GPS 圖示：左上角定位 */
     .gps-top-left-icon {
       position: absolute;
       top: -0.2vw;
@@ -180,7 +306,6 @@
       display: block;
     }
 
-    /* 目的地欄 */
     .dest-col {
       display: flex;
       flex-direction: column;
@@ -205,7 +330,6 @@
       line-height: 1.2;
     }
 
-    /* 底部跑馬燈 */
     .ticker-bar {
       height: 7.5%;
       background: var(--ctb-blue-bg);
@@ -242,35 +366,226 @@
       text-align: center;
       padding: 0 20px;
     }
+
+    /* ================= 模式 2 & 3：新巴 2001 / 2015 經典點陣版 ================= */
+    #retro-pids {
+      width: 100%;
+      height: 100%;
+      background-image: url('ISR Freq.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: none;
+      overflow: hidden;
+      font-family: 'EagleII', 'PingFang HK', monospace;
+    }
+
+    #retro-led-display {
+      position: absolute;
+      top: 19.5%;
+      left: 6.8%;
+      width: 86.4%;
+      height: 61.8%;
+      background-color: var(--screen-bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: inset 0 0 15px rgba(255, 153, 0, 0.05);
+    }
+
+    .retro-departures-list {
+      flex: 1;
+      display: grid;
+      grid-template-rows: repeat(4, 1fr);
+      padding: 0.8% 1.5%;
+    }
+
+    .retro-dep-row {
+      display: grid;
+      grid-template-columns: 18% 45% 18% 19%;
+      align-items: center;
+      color: var(--led-amber);
+      text-shadow: 0 0 6px var(--led-amber-glow);
+    }
+
+    .retro-col-route {
+      font-size: 6vmin;
+      font-family: 'EagleII', monospace;
+      text-align: left;
+      padding-left: 10%;
+      letter-spacing: 0.1vmin;
+    }
+
+    .retro-col-dest {
+      font-size: 4.8vmin;
+      text-align: left;
+      padding-left: 2%;
+      white-space: nowrap;
+      overflow: hidden;
+      letter-spacing: 0.15vmin;
+      font-family: 'EagleII', 'PingFang HK', monospace;
+    }
+
+    .retro-col-fare {
+      font-size: 5vmin;
+      font-family: 'EagleII', monospace;
+      text-align: center;
+    }
+
+    .retro-col-eta {
+      font-size: 5vmin;
+      font-family: 'EagleII', monospace;
+      text-align: right;
+      padding-right: 15%;
+      color: #ffaa00;
+    }
+
+    .retro-eta-arriving {
+      color: var(--led-red);
+      text-shadow: 0 0 8px rgba(255, 51, 0, 0.8);
+      animation: blink 1s infinite alternate;
+    }
+
+    @keyframes blink {
+      0% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
+
+    .retro-bottom-bar {
+      height: 18%;
+      border-top: 0.2vmin solid #2a1a00;
+      display: flex;
+      align-items: center;
+      padding: 0 1.5%;
+      color: var(--led-amber);
+      text-shadow: 0 0 6px var(--led-amber-glow);
+      overflow: hidden;
+      background: #050301;
+    }
+
+    .retro-marquee-container {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+      font-size: 3vmin;
+      font-family: 'EagleII', 'PingFang HK', monospace;
+    }
+
+    .retro-marquee-content {
+      display: inline-block;
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: retro-marquee 25s linear infinite;
+    }
+
+    @keyframes retro-marquee {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-100%, 0); }
+    }
+
+    .retro-clock-display {
+      margin-left: 1.5vmin;
+      padding-left: 1.5vmin;
+      border-left: 0.2vmin solid #3a2200;
+      font-size: 3vmin;
+      font-family: 'EagleII', 'PingFang HK', monospace;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    /* 頂部隱形返回選單觸發區域 */
+    .top-nav-back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 15%;
+      cursor: pointer;
+      z-index: 50;
+    }
   </style>
 </head>
 <body>
 
-  <div id="pids-container" ondblclick="toggleFullScreen()">
-    <div class="header" ondblclick="clearCacheAndReload(event)">
-      <div class="header-col">
-        <span class="zh">路線</span>
-        <span class="en">Route</span>
+  <div id="app-wrapper" ondblclick="toggleFullScreen()">
+    
+    <!-- 主頁選擇選單 -->
+    <div id="menu-container">
+      <div class="menu-title">小西灣（藍灣半島）巴士總站 PIDS 模擬器</div>
+      <div class="menu-subtitle">Siu Sai Wan (Island Resort) Bus Terminus PIDS Simulator</div>
+      
+      <div class="menu-grid">
+        <!-- 城巴現代版 -->
+        <div class="menu-card" onclick="startApp('modern')">
+          <span class="card-tag tag-modern">現代實時</span>
+          <div class="card-title">城巴 LCD 風格<br>(實時 API 連線)</div>
+          <div class="card-desc">藍底 LCD 顯示屏<br>實時到站時間與機場快線圖示</div>
+        </div>
+
+        <!-- 新巴 2001 經典版 -->
+        <div class="menu-card" onclick="startApp('nwfb2001')">
+          <span class="card-tag tag-classic">2001 經典</span>
+          <div class="card-title">新巴 點陣 LED<br>(2001 年經典版)</div>
+          <div class="card-desc">ISR Freq 經典機殼外框<br>8×16 橙黃點陣字體與雙語輪播</div>
+        </div>
+
+        <!-- 新巴 2015 後期版 -->
+        <div class="menu-card" onclick="startApp('nwfb2015')">
+          <span class="card-tag tag-classic">2015 後期</span>
+          <div class="card-title">新巴 點陣 LED<br>(2015 年後期版)</div>
+          <div class="card-desc">ISR Freq 經典機殼外框<br>後期行車路線及票價設定</div>
+        </div>
       </div>
-      <div class="header-col" style="text-align: center;">
-        <span class="zh">分鐘</span>
-        <span class="en">Mins</span>
+
+      <button class="btn-clear-cache" onclick="clearCacheAndReload(event)">⟳ 清除全城巴站位快取 Clear Cache</button>
+      <div style="font-size: 1.1vmin; color: #777; margin-top: 1.5vmin;">* 雙擊畫面頂部可隨時返回此主選單</div>
+    </div>
+
+    <!-- ================= 模式 1：城巴現代版 ================= -->
+    <div id="modern-pids">
+      <div class="header" ondblclick="backToMenu(event)">
+        <div class="header-col">
+          <span class="zh">路線</span>
+          <span class="en">Route</span>
+        </div>
+        <div class="header-col" style="text-align: center;">
+          <span class="zh">分鐘</span>
+          <span class="en">Mins</span>
+        </div>
+        <div class="header-col" style="padding-left: 0.6vw;">
+          <span class="zh">目的地</span>
+          <span class="en">Destination</span>
+        </div>
       </div>
-      <div class="header-col" style="padding-left: 0.6vw;">
-        <span class="zh">目的地</span>
-        <span class="en">Destination</span>
+
+      <div class="route-list" id="routeList">
+        <div class="status-msg" id="loadingMsg">正在啟動系統...<br>System Initializing...</div>
+      </div>
+
+      <div class="ticker-bar">
+        <div class="ticker-content" id="tickerText">
+          上述路線的開出時間會因實際交通情況而有所改變，資料僅供參考，敬請留意。 Please note above departure time may fluctuate as a result of traffic conditions. Information is for your reference. 乘客在車廂站立及行走時，請緊握扶手，確保安全。 For safety, please hold the handrail while standing or moving in the bus compartment. 政府公共交通票價優惠計劃，只適用於使用指定八達通並年滿60歲長者及合資格殘疾人士。不合資格的乘客使用此優惠計劃可被罰款甚或檢控。本公司穿著制服之員工有權要求乘客出示身份證明及八達通以供核實。 Only eligible persons with disabilities and passengers aged 60 and above using Octopus corresponding to their eligibility are entitled to enjoy the Government Public Transport Fare Concession Scheme. Ineligible passengers using the Scheme may be liable to penalty or even prosecution. Please present proof of identity and Octopus for verification upon request by our uniformed staff.
+        </div>
       </div>
     </div>
 
-    <div class="route-list" id="routeList">
-      <div class="status-msg" id="loadingMsg">正在啟動系統...<br>System Initializing...</div>
-    </div>
-
-    <div class="ticker-bar">
-      <div class="ticker-content" id="tickerText">
-        上述路線的開出時間會因實際交通情況而有所改變，資料僅供參考，敬請留意。 Please note above departure time may fluctuate as a result of traffic conditions. Information is for your reference. 乘客在車廂站立及行走時，請緊握扶手，確保安全。 For safety, please hold the handrail while standing or moving in the bus compartment. 政府公共交通票價優惠計劃，只適用於使用指定八達通並年滿60歲長者及合資格殘疾人士。不合資格的乘客使用此優惠計劃可被罰款甚或檢控。本公司穿著制服之員工有權要求乘客出示身份證明及八達通以供核實。 Only eligible persons with disabilities and passengers aged 60 and above using Octopus corresponding to their eligibility are entitled to enjoy the Government Public Transport Fare Concession Scheme. Ineligible passengers using the Scheme may be liable to penalty or even prosecution. Please present proof of identity and Octopus for verification upon request by our uniformed staff.
+    <!-- ================= 模式 2 & 3：新巴 2001 / 2015 經典點陣版 ================= -->
+    <div id="retro-pids">
+      <div class="top-nav-back" ondblclick="backToMenu(event)"></div>
+      <div id="retro-led-display">
+        <div class="retro-departures-list" id="retro-departures-list"></div>
+        <div class="retro-bottom-bar">
+          <div class="retro-marquee-container">
+            <div class="retro-marquee-content" id="retro-marquee-text"></div>
+          </div>
+          <div class="retro-clock-display" id="retro-live-clock"></div>
+        </div>
       </div>
     </div>
+
   </div>
 
   <script>
@@ -279,12 +594,100 @@
     const CITYFLYER_LOGO_SRC = "./Cityflyer_logo.svg";
     const GPS_LOGO_SRC = "./GPS.svg";
 
+    // 經典版排班預設
+    const SCHEDULE_DATA_2001 = [
+      { route: "106", dest_tc: "黃大仙", dest_en: "WONG TAI SIN", fare: "$9.4", mins: 3 },
+      { route: "8", dest_tc: "灣仔碼頭", dest_en: "WAN CHAI FERRY", fare: "$5.4", mins: 7 },
+      { route: "84M", dest_tc: "柴灣地鐵站", dest_en: "CHAI WAN MTR", fare: "$3.0", mins: 12 },
+      { route: "8P", dest_tc: "灣仔碼頭", dest_en: "WAN CHAI FERRY", fare: "$5.4", mins: 16 }
+    ];
+
+    const SCHEDULE_DATA_2015 = [
+      { route: "106", dest_tc: "黃大仙", dest_en: "WONG TAI SIN", fare: "$9.8", mins: 2 },
+      { route: "8", dest_tc: "灣仔北", dest_en: "WAN CHAI NORTH", fare: "$6.1", mins: 6 },
+      { route: "8P", dest_tc: "會展站", dest_en: "EXHIBITION CENTRE", fare: "$6.1", mins: 11 },
+      { route: "82X", dest_tc: "鰂魚涌", dest_en: "QUARRY BAY", fare: "$5.6", mins: 18 }
+    ];
+
+    let currentMode = null;
     let activeDepartures = [];
     let currentPage = 0;
     let isFetching = false;
     let routeStopMap = null;
 
-    // 【全網域自動尋址與途經路線探索引擎】
+    // 經典版計時器
+    let retroIsEnglish = false;
+    let retroRoutesData = [];
+    let modernRefreshTimer = null;
+    let modernPageTimer = null;
+    let retroLangTimer = null;
+    let retroCountdownTimer = null;
+    let retroClockTimer = null;
+
+    function startApp(mode) {
+      currentMode = mode;
+      document.getElementById('menu-container').style.display = 'none';
+
+      if (mode === 'modern') {
+        document.getElementById('modern-pids').style.display = 'flex';
+        document.getElementById('retro-pids').style.display = 'none';
+        
+        fetchLiveIrETAs();
+        modernRefreshTimer = setInterval(fetchLiveIrETAs, 15000);
+        modernPageTimer = setInterval(() => {
+          if (activeDepartures.length > PAGE_SIZE) {
+            currentPage++;
+            renderPage();
+          }
+        }, 10000);
+      } else {
+        document.getElementById('modern-pids').style.display = 'none';
+        document.getElementById('retro-pids').style.display = 'block';
+
+        const marquee = document.getElementById('retro-marquee-text');
+        if (mode === 'nwfb2001') {
+          retroRoutesData = JSON.parse(JSON.stringify(SCHEDULE_DATA_2001));
+          marquee.innerHTML = "歡迎乘坐新世界第一巴士 ★ 顧客服務熱線: 2136 8888 ★ 網址: www.nwfb.com.hk ★ 新巴服務 日日進步 ★ 歐盟三型環保巴士投入服務 ★";
+        } else {
+          retroRoutesData = JSON.parse(JSON.stringify(SCHEDULE_DATA_2015));
+          marquee.innerHTML = "歡迎乘搭新巴網絡 ★ 新巴城巴 App 實時抵站時間已全面開通 ★ 顧客服務熱線: 2136 8888 ★ www.nwfb.com.hk ★";
+        }
+
+        renderRetroRows();
+        retroLangTimer = setInterval(() => {
+          retroIsEnglish = !retroIsEnglish;
+          renderRetroRows();
+        }, 3500);
+
+        retroCountdownTimer = setInterval(() => {
+          retroRoutesData.forEach(item => {
+            item.mins--;
+            if (item.mins < 1) {
+              item.mins = Math.floor(Math.random() * 12) + 8;
+            }
+          });
+          renderRetroRows();
+        }, 60000);
+
+        updateRetroClock();
+        retroClockTimer = setInterval(updateRetroClock, 1000);
+      }
+    }
+
+    function backToMenu(e) {
+      if (e) e.stopPropagation();
+      clearInterval(modernRefreshTimer);
+      clearInterval(modernPageTimer);
+      clearInterval(retroLangTimer);
+      clearInterval(retroCountdownTimer);
+      clearInterval(retroClockTimer);
+
+      document.getElementById('modern-pids').style.display = 'none';
+      document.getElementById('retro-pids').style.display = 'none';
+      document.getElementById('menu-container').style.display = 'flex';
+    }
+
+    /* ================= 現代版邏輯 ================= */
     async function buildIrStopMap() {
       let cached = localStorage.getItem("CTB_IR_DYNAMIC_ROUTES_V8");
       if (cached) {
@@ -293,7 +696,7 @@
       }
 
       const msgDiv = document.getElementById("loadingMsg");
-      if (msgDiv) msgDiv.innerHTML = "系統首次初始化：正在全網域自動搜尋途經『藍灣半島』之所有路線 (約需 5-15 秒)...<br>Auto-discovering routes from API...";
+      if (msgDiv) msgDiv.innerHTML = "系統首次初始化：正在全網域自動搜尋途經『藍灣半島』之所有路線...<br>Auto-discovering routes from API...";
 
       const map = {};
       const irStopIds = new Set(); 
@@ -346,7 +749,6 @@
         const remainingRoutes = allRoutes.filter(r => !map[r]);
         const CHUNK_SIZE = 15; 
         for (let i = 0; i < remainingRoutes.length; i += CHUNK_SIZE) {
-          if (msgDiv) msgDiv.innerHTML = `深度掃描中... 已確認月台數: ${irStopIds.size}<br>正在比對其他潛在途經路線 (${i}/${remainingRoutes.length})...`;
           const chunk = remainingRoutes.slice(i, i + CHUNK_SIZE);
           await Promise.all(chunk.map(async (route) => {
             for (let dir of ["outbound", "inbound"]) {
@@ -414,11 +816,8 @@
                 const diffMins = Math.ceil(diffMs / 60000);
 
                 if (diffMins >= 0) {
-                  // --- 終極修正：使用者指定邏輯 ---
-                  // 只有特定路線 (770, 8H, NA12) 且剩餘時間 <= 3 分鐘時才顯示 GPS 圖示
                   const allowedGpsRoutes = ["770", "8H", "NA12"];
                   const hasGpsIcon = allowedGpsRoutes.includes(route) && (diffMins <= 3);
-                  // ------------------------------------------
 
                   if (!earliest || diffMins < earliest.mins) {
                     earliest = {
@@ -451,7 +850,6 @@
 
     function renderPage() {
       const container = document.getElementById("routeList");
-
       if (activeDepartures.length === 0) {
         container.innerHTML = `<div class="status-msg">現時段暫無即將開出的班次<br>No Active Departures Currently</div>`;
         return;
@@ -497,6 +895,46 @@
       });
     }
 
+    /* ================= 經典點陣版邏輯 ================= */
+    function renderRetroRows() {
+      const container = document.getElementById('retro-departures-list');
+      container.innerHTML = '';
+
+      retroRoutesData.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'retro-dep-row';
+
+        const destText = retroIsEnglish ? item.dest_en : item.dest_tc;
+        let etaText = '';
+        if (item.mins <= 1) {
+          etaText = `<span class="retro-eta-arriving">${retroIsEnglish ? 'ARRIVING' : '即將開出'}</span>`;
+        } else {
+          etaText = `${item.mins} ${retroIsEnglish ? 'MINS' : '分鐘'}`;
+        }
+
+        row.innerHTML = `
+          <div class="retro-col-route">${item.route}</div>
+          <div class="retro-col-dest">${destText}</div>
+          <div class="retro-col-fare">${item.fare}</div>
+          <div class="retro-col-eta">${etaText}</div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function updateRetroClock() {
+      const now = new Date();
+      const year = currentMode === 'nwfb2001' ? 2001 : now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const date = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+
+      document.getElementById('retro-live-clock').innerText = 
+        `${year}年${month}月${date}日 ${hours}:${minutes}:${seconds}`;
+    }
+
     function toggleFullScreen() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
@@ -506,23 +944,12 @@
     }
 
     function clearCacheAndReload(e) {
-      e.stopPropagation();
-      if(confirm("即將清除站位快取並重新掃描全城巴路線，確定嗎？")) {
+      if (e) e.stopPropagation();
+      if (confirm("即將清除全城巴站位快取並重新載入，確定嗎？")) {
         localStorage.removeItem("CTB_IR_DYNAMIC_ROUTES_V8");
         location.reload();
       }
     }
-
-    setInterval(() => {
-      if (activeDepartures.length > PAGE_SIZE) {
-        currentPage++;
-        renderPage();
-      }
-    }, 10000);
-
-    setInterval(fetchLiveIrETAs, 15000);
-
-    fetchLiveIrETAs();
   </script>
 </body>
 </html>
