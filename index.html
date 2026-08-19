@@ -453,7 +453,7 @@
       flex: 1;
       display: grid;
       grid-template-rows: repeat(4, 1fr);
-      padding: 0.6% 1.2%;
+      padding: 0.4% 1.0%;
     }
 
     .retro-dep-row {
@@ -462,18 +462,21 @@
       align-items: center;
       color: var(--led-amber);
       text-shadow: var(--led-amber-glow);
+      line-height: 1;
     }
 
+    /* 文字加大：路線號碼 */
     .retro-col-route {
-      font-size: 6.2vmin;
+      font-size: 8.0vmin;
       font-family: var(--retro-font-stack);
       text-align: left;
       padding-left: 1.5%;
       letter-spacing: 0.05vmin;
     }
 
+    /* 文字加大：目的地 */
     .retro-col-dest {
-      font-size: 5.6vmin;
+      font-size: 7.2vmin;
       text-align: left;
       padding-left: 1%;
       white-space: nowrap;
@@ -482,15 +485,17 @@
       font-family: var(--retro-font-stack);
     }
 
+    /* 文字加大：車費 */
     .retro-col-fare {
-      font-size: 5.8vmin;
+      font-size: 8.0vmin;
       font-family: var(--retro-font-stack);
       text-align: right;
       padding-right: 25%;
     }
 
+    /* 文字加大：尚餘時間 */
     .retro-col-eta {
-      font-size: 5.8vmin;
+      font-size: 8.0vmin;
       font-family: var(--retro-font-stack);
       text-align: right;
       padding-right: 5%;
@@ -503,19 +508,19 @@
       justify-content: center;
       align-items: center;
       height: 100%;
-      font-size: 3.5vmin;
+      font-size: 4.5vmin;
       color: var(--led-amber);
       text-shadow: var(--led-amber-glow);
       text-align: center;
       font-family: var(--retro-font-stack);
     }
 
-    /* 綠色 LED 跑馬燈容器 (貼底、加大、高亮度發光) */
+    /* 綠色 LED 跑馬燈容器 (貼底、極大隻、高亮度發光) */
     .retro-bottom-bar {
       height: 25%;
       border-top: none;
       display: flex;
-      align-items: flex-end; /* 貼底 */
+      align-items: flex-end;
       justify-content: center;
       padding: 0;
       color: var(--led-green);
@@ -529,9 +534,9 @@
       width: 100%;
       height: 100%;
       display: flex;
-      align-items: flex-end; /* 貼底 */
+      align-items: flex-end;
       justify-content: center;
-      font-size: 8.2vmin; /* 更大隻 */
+      font-size: 9.6vmin; /* 跑馬燈極大化 */
       line-height: 1;
       letter-spacing: 0.8vmin;
       font-family: var(--retro-font-stack);
@@ -597,18 +602,18 @@
           <div class="card-desc">藍底 LCD 顯示屏<br>實時到站時間與機場快線圖示</div>
         </div>
 
-        <!-- 新巴 2001 經典點陣 -->
+        <!-- 新巴 2001 經典點陣 (全實時 API) -->
         <div class="menu-card" onclick="startApp('nwfb2001')">
           <span class="card-tag tag-classic">2001 實時</span>
           <div class="card-title">新巴 點陣 LED<br>(2001 年經典實時版)</div>
-          <div class="card-desc">ET16x15 / NWS LECIP 字庫<br>高亮度點陣 / 頂層20%疊加層</div>
+          <div class="card-desc">實時到站班次與目的地<br>高亮度大字點陣 / 頂層20%疊加層</div>
         </div>
 
-        <!-- 新巴 2015 點陣 -->
+        <!-- 新巴 2015 點陣 (暫停服務展示模式) -->
         <div class="menu-card" onclick="startApp('nwfb2015')">
-          <span class="card-tag tag-classic">2015 實時</span>
-          <div class="card-title">新巴 點陣 LED<br>(2015 年實時版)</div>
-          <div class="card-desc">ET16x15 / NWS LECIP 字庫<br>高亮度點陣 / 頂層20%疊加層</div>
+          <span class="card-tag tag-classic">2015 模擬</span>
+          <div class="card-title">新巴 點陣 LED<br>(2015 暫停服務模式)</div>
+          <div class="card-desc">暫停服務 / Out Of Service<br>尚餘時間留空 / 步進跑馬燈</div>
         </div>
       </div>
 
@@ -651,7 +656,7 @@
       <!-- 1. 底層：100% 不透明度文字與 LED 點陣層 -->
       <div id="retro-led-display" class="led-display-layer">
         <div class="retro-departures-list" id="retro-departures-list">
-          <div class="retro-status-msg" id="retro-loading-msg">正在載入實時班次...<br>Loading Live Data...</div>
+          <div class="retro-status-msg" id="retro-loading-msg">正在載入班次...<br>Loading Live Data...</div>
         </div>
         <div class="retro-bottom-bar">
           <div id="retro-marquee-stage" class="marquee-stage-inner"></div>
@@ -664,7 +669,7 @@
       <!-- 3. 頂層：同下層一樣嘅文字，不透明度設定為 20% -->
       <div id="retro-led-display-top" class="led-display-layer">
         <div class="retro-departures-list" id="retro-departures-list-top">
-          <div class="retro-status-msg" id="retro-loading-msg-top">正在載入實時班次...<br>Loading Live Data...</div>
+          <div class="retro-status-msg" id="retro-loading-msg-top">正在載入班次...<br>Loading Live Data...</div>
         </div>
         <div class="retro-bottom-bar">
           <div id="retro-marquee-stage-top" class="marquee-stage-inner"></div>
@@ -687,6 +692,17 @@
       "694S": "17.4", "788": "8.2", "789": "8.2", "A12": "47.1", "NA12": "60.7",
       "N8": "9.4", "N8P": "9.4", "N8X": "9.4", "N118": "17.5"
     };
+
+    const RETRO_2015_ROUTES = [
+      { route: "106", fare: "9.4" },
+      { route: "8", fare: "4.3" },
+      { route: "84M", fare: "3.4" },
+      { route: "8P", fare: "5.8" },
+      { route: "82", fare: "5.3" },
+      { route: "82X", fare: "5.6" },
+      { route: "85", fare: "4.7" },
+      { route: "118", fare: "11.4" }
+    ];
 
     let currentMode = null;
     let activeDepartures = [];
@@ -713,7 +729,11 @@
       if (mode === 'modern') {
         document.getElementById('modern-pids').style.display = 'flex';
         document.getElementById('retro-pids').style.display = 'none';
-      } else {
+        
+        fetchLiveIrETAs();
+        refreshTimer = setInterval(fetchLiveIrETAs, 15000);
+      } 
+      else if (mode === 'nwfb2001') {
         document.getElementById('modern-pids').style.display = 'none';
         document.getElementById('retro-pids').style.display = 'block';
 
@@ -723,10 +743,28 @@
         }, 3500);
 
         startSequencer();
+        fetchLiveIrETAs();
+        refreshTimer = setInterval(fetchLiveIrETAs, 15000);
       }
+      else if (mode === 'nwfb2015') {
+        document.getElementById('modern-pids').style.display = 'none';
+        document.getElementById('retro-pids').style.display = 'block';
 
-      fetchLiveIrETAs();
-      refreshTimer = setInterval(fetchLiveIrETAs, 15000);
+        activeDepartures = RETRO_2015_ROUTES.map(r => ({
+          route: r.route,
+          fare: r.fare,
+          isOutOfService: true
+        }));
+
+        renderRetroPage();
+
+        retroLangTimer = setInterval(() => {
+          retroIsEnglish = !retroIsEnglish;
+          renderRetroPage();
+        }, 3500);
+
+        startSequencer();
+      }
 
       pageTimer = setInterval(() => {
         if (activeDepartures.length > PAGE_SIZE) {
@@ -849,7 +887,7 @@
 
     /* ================= 實時 API 班次獲取 ================= */
     async function fetchLiveIrETAs() {
-      if (isFetching) return;
+      if (isFetching || currentMode === 'nwfb2015') return;
       isFetching = true;
 
       try {
@@ -914,7 +952,7 @@
         if (currentMode === 'modern') {
           activeDepartures = results.sort((a, b) => a.mins - b.mins);
           renderModernPage();
-        } else {
+        } else if (currentMode === 'nwfb2001') {
           activeDepartures = results.sort((a, b) => a.route.localeCompare(b.route, undefined, { numeric: true, sensitivity: 'base' }));
           renderRetroPage();
         }
@@ -974,7 +1012,7 @@
       });
     }
 
-    /* ================= 新巴點陣版渲染 (同時渲染底層與頂層 20% 疊加層) ================= */
+    /* ================= 新巴點陣版渲染 (放大字體) ================= */
     function renderRetroPage() {
       const containerBottom = document.getElementById('retro-departures-list');
       const containerTop = document.getElementById('retro-departures-list-top');
@@ -1001,10 +1039,18 @@
 
         if (i < currentItems.length) {
           const item = currentItems[i];
-          const destText = retroIsEnglish ? toTitleCase(item.destEn) : item.destZh;
           
-          const minsNum = item.mins <= 0 ? 0 : item.mins;
-          const etaText = `${minsNum}${retroIsEnglish ? 'min' : '分鐘'}`;
+          let destText = '';
+          let etaText = '';
+
+          if (item.isOutOfService) {
+            destText = retroIsEnglish ? 'Out Of Service' : '暫停服務';
+            etaText = '';
+          } else {
+            destText = retroIsEnglish ? toTitleCase(item.destEn) : item.destZh;
+            const minsNum = item.mins <= 0 ? 0 : item.mins;
+            etaText = `${minsNum}${retroIsEnglish ? 'min' : '分鐘'}`;
+          }
 
           const rowHtml = `
             <div class="retro-col-route">${item.route}</div>
@@ -1024,7 +1070,7 @@
       }
     }
 
-    /* ================= 點陣階梯步進 17 步跑馬燈 (雙層同步渲染) ================= */
+    /* ================= 點陣階梯步進 17 步跑馬燈 ================= */
     let seqRunning = false;
     let seqTimeout = null;
 
@@ -1034,7 +1080,7 @@
 
     function getFormattedTime(type) {
       const now = new Date();
-      const yr = currentMode === 'nwfb2001' ? 2001 : now.getFullYear();
+      const yr = currentMode === 'nwfb2001' ? 2001 : (currentMode === 'nwfb2015' ? 2015 : now.getFullYear());
       const m = now.getMonth();
       const d = now.getDate();
       const w = WEEK_DAYS[now.getDay()];
